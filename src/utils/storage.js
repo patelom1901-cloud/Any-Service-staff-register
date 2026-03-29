@@ -3,6 +3,26 @@ const ATTENDANCE_KEY = 'asar_attendance';
 const ADVANCES_KEY = 'asar_advances';
 const MODIFICATIONS_KEY = 'asar_modifications';
 
+// Migrate old data from ni_ keys to asar_ keys
+function migrateOldData() {
+  const oldWorkers = localStorage.getItem('ni_workers');
+  const oldAttendance = localStorage.getItem('ni_attendance');
+  const oldAdvances = localStorage.getItem('ni_advances');
+
+  if (oldWorkers && !localStorage.getItem(WORKERS_KEY)) {
+    localStorage.setItem(WORKERS_KEY, oldWorkers);
+  }
+  if (oldAttendance && !localStorage.getItem(ATTENDANCE_KEY)) {
+    localStorage.setItem(ATTENDANCE_KEY, oldAttendance);
+  }
+  if (oldAdvances && !localStorage.getItem(ADVANCES_KEY)) {
+    localStorage.setItem(ADVANCES_KEY, oldAdvances);
+  }
+}
+
+// Run migration on load
+migrateOldData();
+
 function get(key) {
   try {
     const data = localStorage.getItem(key);
