@@ -1,7 +1,10 @@
+import { sanitizeInput, generateSignature } from './security';
+
 const WORKERS_KEY = 'asar_workers';
 const ATTENDANCE_KEY = 'asar_attendance';
 const ADVANCES_KEY = 'asar_advances';
 const MODIFICATIONS_KEY = 'asar_modifications';
+const SIGNATURE_KEY = 'asar_signature';
 
 // Migrate old data from ni_ keys to asar_ keys
 function migrateOldData() {
@@ -32,8 +35,16 @@ function get(key) {
   }
 }
 
+function updateDataIntegrity() {
+  const dataString = (localStorage.getItem(WORKERS_KEY) || '') + 
+                     (localStorage.getItem(ATTENDANCE_KEY) || '') + 
+                     (localStorage.getItem(ADVANCES_KEY) || '');
+  localStorage.setItem(SIGNATURE_KEY, generateSignature(dataString));
+}
+
 function set(key, data) {
   localStorage.setItem(key, JSON.stringify(data));
+  updateDataIntegrity();
 }
 
 function getObj(key) {
@@ -56,6 +67,11 @@ export function saveWorkers(workers) {
 
 export function addWorker(worker) {
   const workers = getWorkers();
+  
+  // Sanitize
+  worker.name = sanitizeInput(worker.name);
+  worker.phone = sanitizeInput(worker.phone);
+  
   workers.push(worker);
   saveWorkers(workers);
   return workers;
@@ -65,6 +81,8 @@ export function updateWorker(id, updates) {
   const workers = getWorkers();
   const idx = workers.findIndex(w => w.id === id);
   if (idx !== -1) {
+    if (updates.name) updates.name = sanitizeInput(updates.name);
+    if (updates.phone) updates.phone = sanitizeInput(updates.phone);
     workers[idx] = { ...workers[idx], ...updates };
     saveWorkers(workers);
   }
@@ -191,6 +209,7 @@ export function saveAdvances(advances) {
 
 export function addAdvance(advance) {
   const advances = getAdvances();
+  if (advance.reason) advance.reason = sanitizeInput(advance.reason);
   advances.push(advance);
   saveAdvances(advances);
   return advances;
