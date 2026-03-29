@@ -1,0 +1,137 @@
+.advances-page {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.adv-summary {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.adv-summary h4 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--gray-600);
+}
+
+.adv-summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--gray-100);
+  font-size: 14px;
+}
+
+.adv-summary-row:last-child { border-bottom: none; }
+.adv-sum-val { color: var(--danger); font-weight: 700; }
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.filter-bar label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.filter-bar select {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.adv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.adv-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+}
+
+.adv-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.adv-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.adv-name {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.adv-date {
+  display: block;
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.adv-reason {
+  display: block;
+  font-size: 11px;
+  color: var(--gray-400);
+  font-style: italic;
+}
+
+.adv-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adv-amount {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--danger);
+}
+
+.adv-del {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: var(--danger-light);
+  color: var(--danger);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adv-del:hover { transform: scale(1.1); }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

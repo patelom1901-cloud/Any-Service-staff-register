@@ -1,0 +1,100 @@
+import { useState, useMemo } from 'react';
+import { format } from 'date-fns';
+import { useWorkers, useAdvances, useStats } from '../hooks/useData';
+import AdvanceForm from '../components/AdvanceForm';
+import './Advances.css';
+
+export default function Advances() {
+  const { workers } = useWorkers();
+  const { advances, addAdvance, deleteAdvance } = useAdvances();
+  const { getBalance } = useStats();
+  const [showForm, setShowForm] = useState(false);
+  const [filterWorker, setFilterWorker] = useState('all');
+
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+
+  const filteredAdvances = useMemo(() => {
+    let filtered = [...advances].sort((a, b) => new Date(b.date) - new Date(a.date));
+    if (filterWorker !== 'all') filtered = filtered.filter(a => a.workerId === filterWorker);
+    return filtered;
+  }, [advances, filterWorker]);
+
+  const handleAdd = (data) => {
+    addAdvance(data);
+    setShowForm(false);
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm('Delete this advance record?')) deleteAdvance(id);
+  };
+
+  const getWorkerName = (id) => workers.find(w => w.id === id)?.name || 'Unknown';
+
+  if (workers.length === 0) {
+    return (
+      <div className="advances-page">
+        <h2>Advances</h2>
+        <div className="empty-state"><p>Add workers first to track advances.</p></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="advances-page">
+      <h2>Advances</h2>
+
+      <div className="adv-summary">
+        <h4>This Month by Worker</h4>
+        {workers.map(w => {
+          const balance = getBalance(w.id, currentYear, currentMonth);
+          return (
+            <div key={w.id} className="adv-summary-row">
+              <span>{w.name}</span>
+              <span className="adv-sum-val">&#8377;{balance.advance}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {!showForm && (
+        <button className="add-worker-btn" onClick={() => setShowForm(true)}>
+          + Add Advance
+        </button>
+      )}
+
+      {showForm && <AdvanceForm workers={workers} onSubmit={handleAdd} onCancel={() => setShowForm(false)} />}
+
+      <div className="filter-bar">
+        <label>Filter:</label>
+        <select value={filterWorker} onChange={e => setFilterWorker(e.target.value)}>
+          <option value="all">All Workers</option>
+          {workers.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+        </select>
+      </div>
+
+      <div className="adv-list">
+        {filteredAdvances.length === 0 ? (
+          <div className="empty-state"><p>No advance records yet.</p></div>
+        ) : (
+          filteredAdvances.map(a => (
+            <div key={a.id} className="adv-card">
+              <div className="adv-info">
+                <div className="adv-avatar">{getWorkerName(a.workerId).charAt(0)}</div>
+                <div>
+                  <span className="adv-name">{getWorkerName(a.workerId)}</span>
+                  <span className="adv-date">{format(new Date(a.date), 'dd MMM yyyy')}</span>
+                  {a.reason && <span className="adv-reason">{a.reason}</span>}
+                </div>
+              </div>
+              <div className="adv-right">
+                <span className="adv-amount">&#8377;{a.amount}</span>
+                <button className="adv-del" onClick={() => handleDelete(a.id)}>&#10005;</button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}

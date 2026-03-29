@@ -1,0 +1,109 @@
+.workers-page {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.add-worker-btn {
+  width: 100%;
+  padding: 14px;
+  border: 2px dashed var(--gray-300);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--primary);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+}
+
+.add-worker-btn:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.workers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.worker-card {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.wc-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.wc-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.wc-info h4 {
+  margin: 0 0 2px;
+  font-size: 16px;
+}
+
+.wc-phone {
+  font-size: 13px;
+  color: var(--gray-500);
+  margin: 0 0 2px;
+}
+
+.wc-wage {
+  font-size: 14px;
+  color: var(--primary);
+  font-weight: 700;
+  margin: 0;
+}
+
+.wc-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.wc-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.wc-btn.edit {
+  background: var(--warning-light);
+  color: var(--warning);
+}
+
+.wc-btn.delete {
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+.wc-btn:hover {
+  transform: translateY(-1px);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

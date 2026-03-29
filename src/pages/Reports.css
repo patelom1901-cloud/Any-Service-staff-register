@@ -1,0 +1,100 @@
+.reports-page {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.report-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.report-filters select {
+  flex: 1;
+  padding: 10px 8px;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  font-size: 14px;
+  background: white;
+}
+
+.export-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.export-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.export-btn.monthly {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+}
+
+.export-btn.yearly {
+  background: white;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.export-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.report-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  background: white;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.report-table th,
+.report-table td {
+  padding: 12px 10px;
+  text-align: right;
+  border-bottom: 1px solid var(--gray-100);
+  white-space: nowrap;
+}
+
+.report-table th {
+  background: var(--gray-50);
+  font-weight: 700;
+  color: var(--gray-600);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.report-table td:first-child,
+.report-table th:first-child {
+  text-align: left;
+}
+
+.report-table td.positive { color: var(--success); font-weight: 700; }
+.report-table td.negative { color: var(--danger); font-weight: 700; }
+
+.report-table tfoot td {
+  background: var(--gray-50);
+  font-weight: 700;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

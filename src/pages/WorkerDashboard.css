@@ -1,0 +1,187 @@
+.worker-dashboard {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.welcome-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 16px;
+  color: white;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.3);
+}
+
+.welcome-info h2 {
+  font-size: 20px;
+  color: white;
+  margin: 0 0 4px;
+}
+
+.welcome-info p {
+  font-size: 13px;
+  opacity: 0.8;
+  margin: 0;
+}
+
+.welcome-wage {
+  text-align: right;
+}
+
+.wage-amount {
+  display: block;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.wage-label {
+  font-size: 11px;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stats-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stat-chip {
+  flex: 1;
+  text-align: center;
+  padding: 14px 8px;
+  border-radius: 14px;
+  border: 1px solid var(--gray-200);
+  background: white;
+}
+
+.stat-chip.present { border-left: 4px solid var(--success); }
+.stat-chip.half { border-left: 4px solid var(--warning); }
+.stat-chip.absent { border-left: 4px solid var(--danger); }
+
+.stat-num {
+  display: block;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.stat-chip.present .stat-num { color: var(--success); }
+.stat-chip.half .stat-num { color: var(--warning); }
+.stat-chip.absent .stat-num { color: var(--danger); }
+
+.stat-txt {
+  font-size: 11px;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.finance-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.finance-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+}
+
+.finance-card.highlight {
+  background: var(--gray-50);
+  border: 2px solid var(--gray-300);
+}
+
+.finance-label {
+  font-size: 14px;
+  color: var(--gray-600);
+}
+
+.finance-value {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.finance-value.earned { color: var(--success); }
+.finance-value.advance { color: var(--danger); }
+.finance-value.positive { color: var(--success); }
+.finance-value.negative { color: var(--danger); }
+
+.mini-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.mini-cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--gray-500);
+  background: var(--gray-50);
+  font-weight: 500;
+}
+
+.mini-cal-day.present {
+  background: var(--success);
+  color: white;
+}
+
+.mini-cal-day.half {
+  background: var(--warning);
+  color: white;
+}
+
+.mini-cal-day.absent {
+  background: var(--danger);
+  color: white;
+}
+
+.mini-cal-day.today {
+  border: 2px solid var(--primary);
+  font-weight: 700;
+}
+
+.cal-legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.legend-dot.present { background: var(--success); }
+.legend-dot.half { background: var(--warning); }
+.legend-dot.absent { background: var(--danger); }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

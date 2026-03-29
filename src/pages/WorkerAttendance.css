@@ -1,0 +1,202 @@
+.worker-attendance {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.worker-attendance h2 {
+  margin-bottom: 4px;
+}
+
+.date-label {
+  color: var(--gray-500);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.window-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.window-status.open {
+  background: var(--success-light);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.window-status.closed {
+  background: var(--danger-light);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+.window-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.window-status.open .window-dot {
+  background: var(--success);
+  animation: pulse 2s infinite;
+}
+
+.window-status.closed .window-dot {
+  background: var(--danger);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.mod-counter {
+  text-align: center;
+  padding: 10px;
+  font-size: 14px;
+  color: var(--gray-600);
+  margin-bottom: 16px;
+}
+
+.has-remaining { color: var(--success); }
+.no-remaining { color: var(--danger); }
+
+.mark-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.mark-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 12px;
+  border: 2px solid var(--gray-200);
+  border-radius: 16px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.mark-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.mark-btn:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.mark-btn .mark-icon {
+  font-size: 28px;
+}
+
+.mark-btn.present.active {
+  background: var(--success-light);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.mark-btn.half.active {
+  background: var(--warning-light);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+.mark-btn.absent.active {
+  background: var(--danger-light);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.clear-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border: 1px dashed var(--gray-300);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--gray-500);
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: all 0.2s;
+}
+
+.clear-btn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: var(--danger-light);
+}
+
+.admin-note {
+  text-align: center;
+  padding: 12px;
+  background: var(--warning-light);
+  color: var(--warning);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recent-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+}
+
+.recent-date {
+  font-size: 14px;
+  color: var(--gray-700);
+}
+
+.recent-status {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.recent-status.present {
+  background: var(--success-light);
+  color: var(--success);
+}
+
+.recent-status.half {
+  background: var(--warning-light);
+  color: var(--warning);
+}
+
+.recent-status.absent {
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

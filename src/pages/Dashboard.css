@@ -1,0 +1,198 @@
+.admin-dashboard {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.window-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.window-banner.open {
+  background: var(--success-light);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.window-banner.closed {
+  background: var(--gray-100);
+  color: var(--gray-500);
+  border: 1px solid var(--gray-200);
+}
+
+.wb-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.window-banner.open .wb-dot {
+  background: var(--success);
+  animation: pulse 2s infinite;
+}
+
+.window-banner.closed .wb-dot {
+  background: var(--gray-400);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.dash-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.ds-card {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  padding: 18px 14px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.ds-card.present { border-left: 4px solid var(--success); }
+.ds-card.absent { border-left: 4px solid var(--danger); }
+.ds-card.half { border-left: 4px solid var(--warning); }
+.ds-card.pending { border-left: 4px solid var(--gray-300); }
+
+.ds-num {
+  display: block;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.ds-label {
+  font-size: 11px;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 20px 0 12px;
+  color: var(--gray-700);
+}
+
+.fin-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.fin-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+}
+
+.fin-card.highlight {
+  background: var(--gray-50);
+  border: 2px solid var(--gray-300);
+}
+
+.fin-label {
+  font-size: 14px;
+  color: var(--gray-600);
+}
+
+.fin-value {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.fin-value.earned { color: var(--success); }
+.fin-value.advance { color: var(--danger); }
+.fin-value.positive { color: var(--success); }
+.fin-value.negative { color: var(--danger); }
+
+.balance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+}
+
+.bal-worker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bal-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.bal-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.bal-amounts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.bal-earned { color: var(--success); font-weight: 600; }
+.bal-advance { color: var(--danger); font-weight: 600; }
+.bal-total.positive { color: var(--success); font-weight: 800; font-size: 14px; }
+.bal-total.negative { color: var(--danger); font-weight: 800; font-size: 14px; }
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--gray-500);
+}
+
+.empty-state span {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.empty-state p {
+  margin-bottom: 6px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -1,0 +1,78 @@
+.worker-advances {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.advance-summary-cards {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.adv-summary-card {
+  flex: 1;
+  padding: 18px 16px;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  text-align: center;
+}
+
+.adv-sum-label {
+  display: block;
+  font-size: 12px;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 6px;
+}
+
+.adv-sum-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--danger);
+}
+
+.adv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.adv-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+}
+
+.adv-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.adv-date {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.adv-reason {
+  font-size: 12px;
+  color: var(--gray-500);
+  font-style: italic;
+}
+
+.adv-amount {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--danger);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
