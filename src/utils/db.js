@@ -20,6 +20,7 @@ export function mapAttendance(row) {
     workerId: row.worker_id,
     date: row.date,
     status: row.status,
+    modCount: row.mod_count || 0,
   };
 }
 
@@ -33,6 +34,21 @@ export function mapAdvance(row) {
     addedBy: row.added_by || 'admin',
     createdAt: row.created_at,
   };
+}
+
+// ─── Settings ─────────────────────────────────────────────────────────────────
+
+export async function fetchSettings() {
+  const { data, error } = await supabase.from('settings').select('*');
+  if (error) { console.error('fetchSettings:', error); return {}; }
+  const settings = {};
+  (data || []).forEach(s => { settings[s.key] = s.value; });
+  return settings;
+}
+
+export async function updateSetting(key, value) {
+  const { error } = await supabase.from('settings').upsert({ key, value });
+  if (error) throw error;
 }
 
 // ─── Workers ──────────────────────────────────────────────────────────────────
@@ -87,9 +103,8 @@ export async function fetchAttendance(workerId = null) {
   return (data || []).map(mapAttendance);
 }
 
-export async function markAttendanceDB(workerId, date, status) {
+export async function markAttendanceDB(workerId, date, status, incrementMod = false) {
   if (status === null) {
-    // Remove record
     const { error } = await supabase
       .from('attendance')
       .delete()
@@ -99,12 +114,30 @@ export async function markAttendanceDB(workerId, date, status) {
     return;
   }
 
-  // Upsert
-  const { error } = await supabase.from('attendance').upsert(
-    [{ worker_id: workerId, date, status }],
-    { onConflict: 'worker_id,date' }
-  );
-  if (error) throw error;
+  if (incrementMod) {
+    // We use a raw RPC or a careful select+update if we want to be safe, 
+    // but for this app a simple upsert with increment logic or separate select is fine.
+    // Let's do a select first to get current mod_count
+    const { data: existing } = await supabase
+      .from('attendance')
+      .select('mod_count')
+      .eq('worker_id', workerId)
+      .eq('date', date)
+      .single();
+    
+    const newModCount = (existing?.mod_count || 0) + 1;
+    const { error } = await supabase.from('attendance').upsert(
+      [{ worker_id: workerId, date, status, mod_count: newModCount }],
+      { onConflict: 'worker_id,date' }
+    );
+    if (error) throw error;
+  } else {
+    const { error } = await supabase.from('attendance').upsert(
+      [{ worker_id: workerId, date, status }],
+      { onConflict: 'worker_id,date' }
+    );
+    if (error) throw error;
+  }
 }
 
 // ─── Advances ─────────────────────────────────────────────────────────────────
@@ -138,48 +171,14 @@ export async function deleteAdvanceDB(id) {
   if (error) throw error;
 }
 
-// ─── Attendance window (stays local — pure time logic) ────────────────────────
-const OPEN_HOUR = 8, OPEN_MINUTE = 30, CLOSE_HOUR = 11, CLOSE_MINUTE = 0;
-const MAX_MODS = 2;
-const MODS_KEY = 'asar_mods_v2';
-
-export function isAttendanceWindowOpen() {
-  const now = new Date();
-  const mins = now.getHours() * 60 + now.getMinutes();
-  return mins >= OPEN_HOUR * 60 + OPEN_MINUTE && mins <= CLOSE_HOUR * 60 + CLOSE_MINUTE;
-}
-
-export function getAttendanceWindowStatus() {
-  const now = new Date();
-  const mins = now.getHours() * 60 + now.getMinutes();
-  const open = OPEN_HOUR * 60 + OPEN_MINUTE;
-  const close = CLOSE_HOUR * 60 + CLOSE_MINUTE;
-  if (mins < open) return { open: false, reason: `Opens in ${open - mins} minutes (8:30 AM)` };
-  if (mins > close) return { open: false, reason: 'Attendance closed for today (11:00 AM)' };
-  return { open: true, reason: `Closes in ${close - mins} minutes` };
-}
-
-function getModsStore() {
-  try { return JSON.parse(localStorage.getItem(MODS_KEY) || '{}'); } catch { return {}; }
-}
-
-export function getModificationCount(workerId, date) {
-  return getModsStore()[`${workerId}_${date}`] || 0;
-}
-
-export function incrementModification(workerId, date) {
-  const store = getModsStore();
-  const key = `${workerId}_${date}`;
-  store[key] = (store[key] || 0) + 1;
-  localStorage.setItem(MODS_KEY, JSON.stringify(store));
-}
-
-export function canMarkAttendance(workerId) {
+export function canMarkAttendance(workerId, attendance) {
   if (!isAttendanceWindowOpen()) {
     return { allowed: false, reason: getAttendanceWindowStatus().reason, remaining: 0 };
   }
   const today = new Date().toISOString().split('T')[0];
-  const count = getModificationCount(workerId, today);
+  const record = attendance.find(a => a.workerId === workerId && a.date === today);
+  const count = record?.modCount || 0;
+  
   if (count >= MAX_MODS) {
     return { allowed: false, reason: `Used all ${MAX_MODS} modifications today. Contact admin.`, remaining: 0 };
   }
@@ -212,73 +211,22 @@ export function computeWorkerBalance(workerId, year, month, workers, attendance,
   return { earned, advance: stats.totalAdvance, balance: earned - stats.totalAdvance };
 }
 
-// ─── Migration: localStorage → Supabase (runs once on first admin login) ──────
+// Window logic (stays pure time logic) ────────────────────────
+const OPEN_HOUR = 8, OPEN_MINUTE = 30, CLOSE_HOUR = 11, CLOSE_MINUTE = 0;
+const MAX_MODS = 2;
 
-export async function migrateLocalStorageToSupabase() {
-  const migrated = localStorage.getItem('asar_migrated_to_supabase');
-  if (migrated) return;
+export function isAttendanceWindowOpen() {
+  const now = new Date();
+  const mins = now.getHours() * 60 + now.getMinutes();
+  return mins >= OPEN_HOUR * 60 + OPEN_MINUTE && mins <= CLOSE_HOUR * 60 + CLOSE_MINUTE;
+}
 
-  try {
-    const oldWorkers = JSON.parse(localStorage.getItem('asar_workers') || '[]');
-    const oldAttendance = JSON.parse(localStorage.getItem('asar_attendance') || '[]');
-    const oldAdvances = JSON.parse(localStorage.getItem('asar_advances') || '[]');
-
-    if (oldWorkers.length === 0) {
-      localStorage.setItem('asar_migrated_to_supabase', '1');
-      return;
-    }
-
-    // Check if supabase already has data
-    const { data: existing } = await supabase.from('workers').select('id').limit(1);
-    if (existing && existing.length > 0) {
-      localStorage.setItem('asar_migrated_to_supabase', '1');
-      return;
-    }
-
-    // Insert workers preserving IDs
-    if (oldWorkers.length > 0) {
-      await supabase.from('workers').insert(
-        oldWorkers.map(w => ({
-          id: w.id,
-          name: w.name,
-          phone: w.phone || '',
-          daily_wage: w.dailyWage || 0,
-          pin: w.pin || '0000',
-          created_at: w.createdAt || new Date().toISOString(),
-        }))
-      );
-    }
-
-    // Insert attendance
-    if (oldAttendance.length > 0) {
-      const attRows = oldAttendance
-        .filter(a => a.status !== null && a.workerId)
-        .map(a => ({
-          worker_id: a.workerId,
-          date: a.date,
-          status: a.status,
-        }));
-      if (attRows.length > 0) await supabase.from('attendance').insert(attRows);
-    }
-
-    // Insert advances
-    if (oldAdvances.length > 0) {
-      await supabase.from('advances').insert(
-        oldAdvances.map(a => ({
-          id: a.id,
-          worker_id: a.workerId,
-          amount: a.amount,
-          date: a.date,
-          reason: a.reason || '',
-          added_by: 'admin',
-          created_at: a.createdAt || new Date().toISOString(),
-        }))
-      );
-    }
-
-    localStorage.setItem('asar_migrated_to_supabase', '1');
-    console.log('✅ Migrated localStorage data to Supabase');
-  } catch (err) {
-    console.error('Migration error (non-fatal):', err);
-  }
+export function getAttendanceWindowStatus() {
+  const now = new Date();
+  const mins = now.getHours() * 60 + now.getMinutes();
+  const open = OPEN_HOUR * 60 + OPEN_MINUTE;
+  const close = CLOSE_HOUR * 60 + CLOSE_MINUTE;
+  if (mins < open) return { open: false, reason: `Opens in ${open - mins} minutes (8:30 AM)` };
+  if (mins > close) return { open: false, reason: 'Attendance closed for today (11:00 AM)' };
+  return { open: true, reason: `Closes in ${close - mins} minutes` };
 }

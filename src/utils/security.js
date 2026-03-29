@@ -25,16 +25,15 @@ export function generateSignature(dataString) {
   return hash.toString(16);
 }
 
-// Rate Limiter
-const LIMITER_KEY = 'asar_limiter';
+// In-memory Rate Limiter (resets on refresh as requested to remove all localStorage)
+const _limiterData = {};
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS = 5 * 60 * 1000; // 5 minutes
 
 export function checkRateLimit(action) {
   try {
-    const data = JSON.parse(localStorage.getItem(LIMITER_KEY) || '{}');
     const now = Date.now();
-    const state = data[action] || { attempts: 0, lockoutUntil: 0 };
+    const state = _limiterData[action] || { attempts: 0, lockoutUntil: 0 };
 
     if (now < state.lockoutUntil) {
       const remainingSecs = Math.ceil((state.lockoutUntil - now) / 1000);
@@ -45,8 +44,7 @@ export function checkRateLimit(action) {
     if (state.lockoutUntil > 0 && now > state.lockoutUntil) {
       state.attempts = 0;
       state.lockoutUntil = 0;
-      data[action] = state;
-      localStorage.setItem(LIMITER_KEY, JSON.stringify(data));
+      _limiterData[action] = state;
     }
 
     return { 
@@ -61,25 +59,21 @@ export function checkRateLimit(action) {
 
 export function recordFailedAttempt(action) {
   try {
-    const data = JSON.parse(localStorage.getItem(LIMITER_KEY) || '{}');
-    const state = data[action] || { attempts: 0, lockoutUntil: 0 };
+    const state = _limiterData[action] || { attempts: 0, lockoutUntil: 0 };
     
     state.attempts += 1;
     if (state.attempts >= MAX_ATTEMPTS) {
       state.lockoutUntil = Date.now() + LOCKOUT_MS;
     }
     
-    data[action] = state;
-    localStorage.setItem(LIMITER_KEY, JSON.stringify(data));
+    _limiterData[action] = state;
   } catch {}
 }
 
 export function resetRateLimit(action) {
     try {
-      const data = JSON.parse(localStorage.getItem(LIMITER_KEY) || '{}');
-      if (data[action]) {
-          delete data[action];
-          localStorage.setItem(LIMITER_KEY, JSON.stringify(data));
+      if (_limiterData[action]) {
+          delete _limiterData[action];
       }
     } catch {}
 }

@@ -1,10 +1,9 @@
 -- ============================================================
--- NESHINDUSTRIES WORKERS APP - SUPABASE DATABASE SETUP
--- Run this ENTIRE script in your Supabase SQL Editor
--- Dashboard → SQL Editor → New query → Paste → Run
+-- NESHINDUSTRIES WORKERS APP - UPDATED DB SETUP
+-- This script is safe to run even if tables already exist.
 -- ============================================================
 
--- 1. WORKERS TABLE
+-- 1. Ensure Workers Table exists
 CREATE TABLE IF NOT EXISTS workers (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name        TEXT NOT NULL,
@@ -14,7 +13,7 @@ CREATE TABLE IF NOT EXISTS workers (
   created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. ATTENDANCE TABLE
+-- 2. Ensure Attendance Table exists and has mod_count
 CREATE TABLE IF NOT EXISTS attendance (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   worker_id   UUID NOT NULL REFERENCES workers(id) ON DELETE CASCADE,
@@ -24,7 +23,10 @@ CREATE TABLE IF NOT EXISTS attendance (
   UNIQUE (worker_id, date)
 );
 
--- 3. ADVANCES TABLE
+-- ADD mod_count if it doesn't exist
+ALTER TABLE attendance ADD COLUMN IF NOT EXISTS mod_count INTEGER DEFAULT 0;
+
+-- 3. Ensure Advances Table exists
 CREATE TABLE IF NOT EXISTS advances (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   worker_id   UUID NOT NULL REFERENCES workers(id) ON DELETE CASCADE,
@@ -35,17 +37,40 @@ CREATE TABLE IF NOT EXISTS advances (
   created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. ENABLE REAL-TIME on all tables
--- (Required so changes instantly push to all connected devices)
-ALTER PUBLICATION supabase_realtime ADD TABLE workers;
-ALTER PUBLICATION supabase_realtime ADD TABLE attendance;
-ALTER PUBLICATION supabase_realtime ADD TABLE advances;
+-- 4. Ensure Settings Table exists
+CREATE TABLE IF NOT EXISTS settings (
+  key         TEXT PRIMARY KEY,
+  value       TEXT NOT NULL
+);
 
--- 5. DISABLE Row Level Security
--- (This is an internal company tool — the anon key is only shared with staff)
-ALTER TABLE workers   DISABLE ROW LEVEL SECURITY;
+-- Insert default settings if they don't exist
+INSERT INTO settings (key, value) VALUES 
+  ('admin_password_hash', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9'), -- admin123
+  ('language_pref', 'en')
+ON CONFLICT (key) DO NOTHING;
+
+-- 5. ENABLE REAL-TIME (Safe way to add tables to publication)
+-- This block checks if the table is already in the publication before adding it
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND tablename = 'workers') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE workers;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND tablename = 'attendance') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE attendance;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND tablename = 'advances') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE advances;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND tablename = 'settings') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE settings;
+  END IF;
+END $$;
+
+-- 6. DISABLE Row Level Security (Internal tool)
+ALTER TABLE workers    DISABLE ROW LEVEL SECURITY;
 ALTER TABLE attendance DISABLE ROW LEVEL SECURITY;
-ALTER TABLE advances  DISABLE ROW LEVEL SECURITY;
+ALTER TABLE advances   DISABLE ROW LEVEL SECURITY;
+ALTER TABLE settings   DISABLE ROW LEVEL SECURITY;
 
--- ✅ Done! Your database is ready.
--- The app will automatically migrate any existing data on first admin login.
+-- ✅ All set!

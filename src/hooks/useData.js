@@ -68,20 +68,19 @@ export function useAttendance(workerId = null) {
 
   const markAttendance = useCallback(async (wId, date, status, isAdmin = false) => {
     if (!isAdmin) {
-      const check = canMarkAttendance(wId);
+      const check = canMarkAttendance(wId, attendance);
       if (!check.allowed && status !== null) {
         return { success: false, reason: check.reason };
       }
-      incrementModification(wId, date);
     }
     try {
-      await markAttendanceDB(wId, date, status);
+      await markAttendanceDB(wId, date, status, !isAdmin);
       return { success: true, reason: null };
     } catch (err) {
       console.error('markAttendance error:', err);
       return { success: false, reason: err.message };
     }
-  }, []);
+  }, [attendance]);
 
   return { attendance, loading, markAttendance };
 }

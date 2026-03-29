@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { verifyAdminPassword, setCurrentUser, verifyWorkerPin } from '../utils/auth';
 import { checkRateLimit, recordFailedAttempt, resetRateLimit } from '../utils/security';
-import { migrateLocalStorageToSupabase } from '../utils/db';
 import { useWorkers } from '../hooks/useData';
 import { useTranslation } from '../utils/i18n';
 import './Login.css';
@@ -39,8 +38,6 @@ export default function Login() {
     if (isValid) {
       resetRateLimit('admin_login');
       setCurrentUser('admin');
-      // Migrate any existing localStorage data to Supabase (runs once)
-      migrateLocalStorageToSupabase();
       navigate('/admin');
     } else {
       recordFailedAttempt('admin_login');
