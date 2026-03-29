@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../utils/auth';
+import { useTranslation } from '../utils/i18n';
 import './Splash.css';
 
 export default function Splash() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [phase, setPhase] = useState(0);
 
   useEffect(() => {
@@ -26,7 +28,7 @@ export default function Splash() {
       </div>
       <div className={`splash-text ${phase >= 2 ? 'visible' : ''}`}>
         <h1>Any Service</h1>
-        <p>Attendance Register</p>
+        <p>{t('attendanceRegister')}</p>
       </div>
       <div className="splash-loader">
         <div className="splash-loader-bar"></div>

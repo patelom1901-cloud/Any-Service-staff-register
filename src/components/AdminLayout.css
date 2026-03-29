@@ -47,6 +47,32 @@
   text-transform: uppercase;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lang-btn {
+  height: 32px;
+  min-width: 36px;
+  padding: 0 8px;
+  border: 1.5px solid var(--primary);
+  border-radius: 8px;
+  background: white;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+
+.lang-btn:hover {
+  background: var(--primary);
+  color: white;
+}
+
 .logout-btn {
   width: 38px;
   height: 38px;

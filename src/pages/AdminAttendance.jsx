@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react';
 import { format, addDays, subDays, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { useWorkers, useAttendance } from '../hooks/useData';
+import { useTranslation } from '../utils/i18n';
 import './AdminAttendance.css';
 
 export default function AdminAttendance() {
+  const { t } = useTranslation();
   const { workers } = useWorkers();
   const { attendance, markAttendance } = useAttendance();
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -11,39 +13,33 @@ export default function AdminAttendance() {
 
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
 
-  const todayAttendance = useMemo(() => {
-    return attendance.filter(a => a.date === dateStr);
-  }, [attendance, dateStr]);
+  const todayAttendance = useMemo(() =>
+    attendance.filter(a => a.date === dateStr),
+    [attendance, dateStr]
+  );
 
-  const getStatus = (workerId) => {
-    const record = todayAttendance.find(a => a.workerId === workerId);
-    return record?.status || null;
-  };
+  const getStatus = (workerId) => todayAttendance.find(a => a.workerId === workerId)?.status || null;
 
-  const handleMark = (workerId, status) => {
-    markAttendance(workerId, dateStr, status, true);
-  };
+  const handleMark = (workerId, status) => markAttendance(workerId, dateStr, status, true);
 
-  const markAll = (status) => {
-    workers.forEach(w => markAttendance(w.id, dateStr, status, true));
-  };
+  const markAll = (status) => workers.forEach(w => markAttendance(w.id, dateStr, status, true));
 
   if (workers.length === 0) {
     return (
       <div className="admin-attendance">
-        <h2>Attendance</h2>
-        <div className="empty-state"><p>Add workers first to manage attendance.</p></div>
+        <h2>{t('attendance')}</h2>
+        <div className="empty-state"><p>{t('addWorkersFirstAttendance')}</p></div>
       </div>
     );
   }
 
   return (
     <div className="admin-attendance">
-      <h2>Manage Attendance</h2>
+      <h2>{t('manageAttendance')}</h2>
 
       <div className="view-toggle">
-        <button className={`toggle-btn ${view === 'daily' ? 'active' : ''}`} onClick={() => setView('daily')}>Daily</button>
-        <button className={`toggle-btn ${view === 'calendar' ? 'active' : ''}`} onClick={() => setView('calendar')}>Calendar</button>
+        <button className={`toggle-btn ${view === 'daily' ? 'active' : ''}`} onClick={() => setView('daily')}>{t('daily')}</button>
+        <button className={`toggle-btn ${view === 'calendar' ? 'active' : ''}`} onClick={() => setView('calendar')}>{t('calendar')}</button>
       </div>
 
       {view === 'daily' && (
@@ -56,8 +52,8 @@ export default function AdminAttendance() {
           <p className="date-label">{format(selectedDate, 'EEEE, dd MMMM yyyy')}</p>
 
           <div className="quick-actions">
-            <button className="qa-btn present" onClick={() => markAll('present')}>All Present</button>
-            <button className="qa-btn absent" onClick={() => markAll('absent')}>All Absent</button>
+            <button className="qa-btn present" onClick={() => markAll('present')}>{t('allPresent')}</button>
+            <button className="qa-btn absent" onClick={() => markAll('absent')}>{t('allAbsent')}</button>
           </div>
 
           <div className="attendance-list">
@@ -82,13 +78,13 @@ export default function AdminAttendance() {
       )}
 
       {view === 'calendar' && (
-        <CalendarView workers={workers} attendance={attendance} />
+        <CalendarView workers={workers} attendance={attendance} t={t} />
       )}
     </div>
   );
 }
 
-function CalendarView({ workers, attendance }) {
+function CalendarView({ workers, attendance, t }) {
   const [monthDate, setMonthDate] = useState(new Date());
   const monthStart = startOfMonth(monthDate);
   const monthEnd = endOfMonth(monthDate);
@@ -107,7 +103,6 @@ function CalendarView({ workers, attendance }) {
         const present = monthAtt.filter(a => a.status === 'present').length;
         const half = monthAtt.filter(a => a.status === 'half').length;
         const absent = monthAtt.filter(a => a.status === 'absent').length;
-
         return (
           <div key={w.id} className="cal-worker">
             <h4>{w.name}</h4>
@@ -121,7 +116,7 @@ function CalendarView({ workers, attendance }) {
                 const ds = format(day, 'yyyy-MM-dd');
                 const rec = monthAtt.find(a => a.date === ds);
                 return (
-                  <div key={ds} className={`cal-day ${rec?.status || ''}`} title={`${format(day, 'dd MMM')} - ${rec?.status || 'Not marked'}`}>
+                  <div key={ds} className={`cal-day ${rec?.status || ''}`} title={`${format(day, 'dd MMM')} - ${rec?.status || t('notMarkedStatus')}`}>
                     {format(day, 'd')}
                   </div>
                 );

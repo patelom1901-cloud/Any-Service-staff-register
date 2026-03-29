@@ -1,14 +1,16 @@
 import * as XLSX from 'xlsx';
-import { getWorkers, getAttendanceByMonth, getAdvancesByMonth, getMonthlyStats } from './storage';
+import { computeMonthlyStats } from './db';
 
-export function exportMonthlyReport(year, month, format = 'xlsx') {
-  const workers = getWorkers();
-  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-  // Summary sheet
+export function exportMonthlyReport(year, month, fmt = 'xlsx', workers = [], attendance = [], advances = []) {
+  const prefix = `${year}-${String(month + 1).padStart(2, '0')}`;
+
   const summaryData = workers.map(w => {
-    const stats = getMonthlyStats(w.id, year, month);
+    const stats = computeMonthlyStats(w.id, year, month, attendance, advances);
     const earned = stats.attendanceDays * w.dailyWage;
     return {
       'Worker Name': w.name,
@@ -19,67 +21,52 @@ export function exportMonthlyReport(year, month, format = 'xlsx') {
       'Days Absent': stats.absent,
       'Total Earned': earned,
       'Advance Taken': stats.totalAdvance,
-      'Balance (Payable)': earned - stats.totalAdvance
+      'Balance (Payable)': earned - stats.totalAdvance,
     };
   });
 
-  // Attendance detail sheet
-  const attendance = getAttendanceByMonth(year, month);
-  const attendanceData = attendance.map(a => {
+  const monthAttendance = attendance.filter(a => a.date.startsWith(prefix));
+  const attendanceData = monthAttendance.map(a => {
     const worker = workers.find(w => w.id === a.workerId);
     return {
       'Date': a.date,
       'Worker': worker?.name || 'Unknown',
-      'Status': a.status === 'present' ? 'Present' : a.status === 'half' ? 'Half Day' : 'Absent'
+      'Status': a.status === 'present' ? 'Present' : a.status === 'half' ? 'Half Day' : 'Absent',
     };
   });
 
-  // Advances detail sheet
-  const advances = getAdvancesByMonth(year, month);
-  const advanceData = advances.map(a => {
+  const monthAdvances = advances.filter(a => a.date.startsWith(prefix));
+  const advanceData = monthAdvances.map(a => {
     const worker = workers.find(w => w.id === a.workerId);
     return {
       'Date': a.date,
       'Worker': worker?.name || 'Unknown',
       'Amount': a.amount,
-      'Reason': a.reason || '-'
+      'Reason': a.reason || '-',
     };
   });
 
   const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryData), 'Monthly Summary');
+  if (attendanceData.length > 0)
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(attendanceData), 'Attendance Detail');
+  if (advanceData.length > 0)
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(advanceData), 'Advance Detail');
 
-  const ws1 = XLSX.utils.json_to_sheet(summaryData);
-  XLSX.utils.book_append_sheet(wb, ws1, 'Monthly Summary');
-
-  if (attendanceData.length > 0) {
-    const ws2 = XLSX.utils.json_to_sheet(attendanceData);
-    XLSX.utils.book_append_sheet(wb, ws2, 'Attendance Detail');
-  }
-
-  if (advanceData.length > 0) {
-    const ws3 = XLSX.utils.json_to_sheet(advanceData);
-    XLSX.utils.book_append_sheet(wb, ws3, 'Advance Detail');
-  }
-
-  const fileName = `ASAR_${monthNames[month]}_${year}.${format}`;
-  XLSX.writeFile(wb, fileName, { bookType: format === 'csv' ? 'csv' : 'xlsx' });
+  XLSX.writeFile(wb, `ASAR_${MONTH_NAMES[month]}_${year}.${fmt}`, { bookType: fmt === 'csv' ? 'csv' : 'xlsx' });
 }
 
-export function exportYearlyReport(year, format = 'xlsx') {
-  const workers = getWorkers();
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
+export function exportYearlyReport(year, fmt = 'xlsx', workers = [], attendance = [], advances = []) {
   const yearlyData = workers.map(w => {
     const row = { 'Worker Name': w.name, 'Daily Wage': w.dailyWage };
     let totalEarned = 0, totalAdvance = 0;
 
     for (let m = 0; m < 12; m++) {
-      const stats = getMonthlyStats(w.id, year, m);
+      const stats = computeMonthlyStats(w.id, year, m, attendance, advances);
       const earned = stats.attendanceDays * w.dailyWage;
-      row[`${monthNames[m]} Days`] = stats.present + stats.halfDay * 0.5;
-      row[`${monthNames[m]} Earned`] = earned;
-      row[`${monthNames[m]} Advance`] = stats.totalAdvance;
+      row[`${MONTH_SHORT[m]} Days`] = stats.present + stats.halfDay * 0.5;
+      row[`${MONTH_SHORT[m]} Earned`] = earned;
+      row[`${MONTH_SHORT[m]} Advance`] = stats.totalAdvance;
       totalEarned += earned;
       totalAdvance += stats.totalAdvance;
     }
@@ -91,9 +78,6 @@ export function exportYearlyReport(year, format = 'xlsx') {
   });
 
   const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.json_to_sheet(yearlyData);
-  XLSX.utils.book_append_sheet(wb, ws, `${year} Report`);
-
-  const fileName = `ASAR_Yearly_${year}.${format}`;
-  XLSX.writeFile(wb, fileName, { bookType: format === 'csv' ? 'csv' : 'xlsx' });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(yearlyData), `${year} Report`);
+  XLSX.writeFile(wb, `ASAR_Yearly_${year}.${fmt}`, { bookType: fmt === 'csv' ? 'csv' : 'xlsx' });
 }

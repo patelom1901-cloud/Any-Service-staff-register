@@ -1,13 +1,17 @@
 import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { useWorkers, useAdvances, useStats } from '../hooks/useData';
+import { useAttendance } from '../hooks/useData';
 import AdvanceForm from '../components/AdvanceForm';
+import { useTranslation } from '../utils/i18n';
 import './Advances.css';
 
 export default function Advances() {
+  const { t } = useTranslation();
   const { workers } = useWorkers();
   const { advances, addAdvance, deleteAdvance } = useAdvances();
-  const { getBalance } = useStats();
+  const { attendance } = useAttendance();
+  const { getBalance } = useStats(workers, attendance, advances);
   const [showForm, setShowForm] = useState(false);
   const [filterWorker, setFilterWorker] = useState('all');
 
@@ -20,13 +24,13 @@ export default function Advances() {
     return filtered;
   }, [advances, filterWorker]);
 
-  const handleAdd = (data) => {
-    addAdvance(data);
+  const handleAdd = async (data) => {
+    await addAdvance(data);
     setShowForm(false);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Delete this advance record?')) deleteAdvance(id);
+  const handleDelete = async (id) => {
+    if (window.confirm(t('deleteAdvanceConfirm'))) await deleteAdvance(id);
   };
 
   const getWorkerName = (id) => workers.find(w => w.id === id)?.name || 'Unknown';
@@ -34,24 +38,24 @@ export default function Advances() {
   if (workers.length === 0) {
     return (
       <div className="advances-page">
-        <h2>Advances</h2>
-        <div className="empty-state"><p>Add workers first to track advances.</p></div>
+        <h2>{t('advances')}</h2>
+        <div className="empty-state"><p>{t('addWorkersFirstAdvance')}</p></div>
       </div>
     );
   }
 
   return (
     <div className="advances-page">
-      <h2>Advances</h2>
+      <h2>{t('advances')}</h2>
 
       <div className="adv-summary">
-        <h4>This Month by Worker</h4>
+        <h4>{t('thisMonthByWorker')}</h4>
         {workers.map(w => {
-          const balance = getBalance(w.id, currentYear, currentMonth);
+          const bal = getBalance(w.id, currentYear, currentMonth);
           return (
             <div key={w.id} className="adv-summary-row">
               <span>{w.name}</span>
-              <span className="adv-sum-val">&#8377;{balance.advance}</span>
+              <span className="adv-sum-val">&#8377;{bal.advance}</span>
             </div>
           );
         })}
@@ -59,23 +63,23 @@ export default function Advances() {
 
       {!showForm && (
         <button className="add-worker-btn" onClick={() => setShowForm(true)}>
-          + Add Advance
+          {t('addAdvance')}
         </button>
       )}
 
       {showForm && <AdvanceForm workers={workers} onSubmit={handleAdd} onCancel={() => setShowForm(false)} />}
 
       <div className="filter-bar">
-        <label>Filter:</label>
+        <label>{t('filter')}</label>
         <select value={filterWorker} onChange={e => setFilterWorker(e.target.value)}>
-          <option value="all">All Workers</option>
+          <option value="all">{t('allWorkers')}</option>
           {workers.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
         </select>
       </div>
 
       <div className="adv-list">
         {filteredAdvances.length === 0 ? (
-          <div className="empty-state"><p>No advance records yet.</p></div>
+          <div className="empty-state"><p>{t('noAdvanceRecords')}</p></div>
         ) : (
           filteredAdvances.map(a => (
             <div key={a.id} className="adv-card">
@@ -83,7 +87,7 @@ export default function Advances() {
                 <div className="adv-avatar">{getWorkerName(a.workerId).charAt(0)}</div>
                 <div>
                   <span className="adv-name">{getWorkerName(a.workerId)}</span>
-                  <span className="adv-date">{format(new Date(a.date), 'dd MMM yyyy')}</span>
+                  <span className="adv-date">{format(new Date(a.date + 'T00:00:00'), 'dd MMM yyyy')}</span>
                   {a.reason && <span className="adv-reason">{a.reason}</span>}
                 </div>
               </div>

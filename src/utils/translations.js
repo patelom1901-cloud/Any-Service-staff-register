@@ -1,0 +1,468 @@
+const translations = {
+  en: {
+    // Nav
+    dashboard: 'Dashboard',
+    workers: 'Workers',
+    attendance: 'Attendance',
+    advances: 'Advances',
+    reports: 'Reports',
+    myStats: 'My Stats',
+
+    // Header
+    adminPanel: 'Admin Panel',
+    anyService: 'Any Service',
+    logout: 'Logout',
+
+    // Login
+    login: 'Login',
+    adminLogin: 'Admin Login',
+    workerLogin: 'Worker Login',
+    manageWorkers: 'Manage workers & reports',
+    markAttendance: 'Mark attendance & view stats',
+    selectYourName: 'Select Your Name',
+    enterAdminPassword: 'Enter admin password',
+    enterPin: 'Enter your 4-digit PIN',
+    defaultPin: 'default: 0000',
+    back: 'Back',
+    enter: 'Enter',
+    noWorkersContact: 'No workers added yet. Contact admin to add workers.',
+    tooManyAttempts: 'Too many attempts. Blocked for',
+    lockedOut: 'Locked out for',
+    minutes: 'minutes',
+    tryAgainIn: 'Try again in',
+    attemptsLeft: 'attempts left',
+    incorrectPassword: 'Incorrect password.',
+    incorrectPin: 'Incorrect PIN.',
+
+    // Dashboard
+    present: 'Present',
+    absent: 'Absent',
+    halfDay: 'Half Day',
+    notMarked: 'Not Marked',
+    monthlySummary: 'Monthly Summary',
+    totalEarned: 'Total Earned',
+    totalAdvance: 'Total Advance',
+    netPayable: 'Net Payable',
+    workerBalances: 'Worker Balances',
+    noWorkers: 'No workers added yet.',
+    goToWorkers: 'Go to Workers tab to add your first worker.',
+    attendanceWindow: 'Attendance',
+
+    // Workers
+    addNewWorker: '+ Add New Worker',
+    noWorkersYet: 'No workers added yet.',
+    tapToAdd: 'Tap "+ Add New Worker" to get started.',
+    edit: 'Edit',
+    remove: 'Remove',
+    perDay: '/day',
+    confirmRemove: 'Remove {name}? Their attendance records will be kept.',
+    addWorkersFirst: 'Add workers first.',
+
+    // Worker Form
+    workerName: 'Worker Name',
+    name: 'Name *',
+    phone: 'Phone',
+    loginPin: 'Login PIN (4 digits)',
+    pinDefault: 'Default is 0000 if left blank.',
+    dailyWage: 'Daily Wage (₹) *',
+    addWorker: 'Add Worker',
+    editWorker: 'Edit Worker',
+    updateWorker: 'Update',
+    cancel: 'Cancel',
+    workerNamePlaceholder: 'Worker name',
+    phonePlaceholder: 'Phone number',
+    wagePlaceholder: 'e.g. 500',
+
+    // Attendance
+    manageAttendance: 'Manage Attendance',
+    markTodayAttendance: "Mark Today's Attendance",
+    daily: 'Daily',
+    calendar: 'Calendar',
+    allPresent: 'All Present',
+    allAbsent: 'All Absent',
+    notMarkedStatus: 'Not marked',
+    addWorkersFirstAttendance: 'Add workers first to manage attendance.',
+
+    // Worker Attendance
+    modificationsRemaining: 'Modifications remaining today:',
+    clearAttendance: 'Clear my attendance',
+    recentAttendance: 'Recent Attendance',
+    noAttendanceYet: 'No attendance records yet.',
+    contactAdmin: 'Contact admin to modify your attendance.',
+    windowOpen: 'Opens in {mins} minutes (8:30 AM)',
+    windowClosed: 'Attendance closed for today (11:00 AM)',
+    windowCloses: 'Closes in {mins} minutes',
+    usedAllMods: 'Used all 2 modifications today. Contact admin.',
+
+    // Worker Dashboard
+    hello: 'Hello',
+    monthlySummaryTag: "Here's your monthly summary",
+    advanceTaken: 'Advance Taken',
+    netBalance: 'Net Balance',
+    calendarTitle: 'Calendar',
+    workerNotFound: 'Worker not found. Contact admin.',
+
+    // Advances
+    thisMonthByWorker: 'This Month by Worker',
+    addAdvance: '+ Add Advance',
+    allWorkers: 'All Workers',
+    filter: 'Filter:',
+    noAdvanceRecords: 'No advance records yet.',
+    deleteAdvanceConfirm: 'Delete this advance record?',
+    addWorkersFirstAdvance: 'Add workers first to track advances.',
+    myAdvances: 'My Advances',
+    thisMonth: 'This Month',
+    thisYear: 'This Year',
+    allRecords: 'All Records',
+    noAdvancesYet: 'No advance records yet.',
+
+    // Advance Form
+    selectWorker: 'Worker',
+    selectWorkerPlaceholder: 'Select worker',
+    amount: 'Amount (₹)',
+    date: 'Date',
+    reason: 'Reason (optional)',
+    reasonPlaceholder: 'e.g. Medical',
+    addAdvanceBtn: 'Add Advance',
+
+    // Reports
+    monthlyReport: '💾 Monthly Report',
+    yearlyReport: '💾 Yearly Report',
+    worker: 'Worker',
+    wage: 'Wage',
+    days: 'Days',
+    earned: 'Earned',
+    advance: 'Advance',
+    balance: 'Balance',
+    total: 'Total',
+    addWorkersFirstReports: 'Add workers and mark attendance to generate reports.',
+
+    // General
+    loading: 'Loading...',
+    syncLive: 'Live',
+    syncing: 'Syncing...',
+
+    // PWA
+    installApp: 'Install ASAR App',
+    iosInstall: 'Tap Share then "Add to Home Screen"',
+    androidInstall: 'Add to home screen for faster access & offline support',
+    browserInstall: 'Open browser menu (⋮) and tap Install',
+    install: 'Install',
+    pwaManualAlert: "Please open your browser menu and tap 'Install App' or 'Add to Home Screen'.",
+
+    // Splash
+    attendanceRegister: 'Attendance Register',
+  },
+
+  gu: {
+    // Nav
+    dashboard: 'ડૅશબૉર્ડ',
+    workers: 'કામદારો',
+    attendance: 'હાજરી',
+    advances: 'એડવાન્સ',
+    reports: 'રિપોર્ટ',
+    myStats: 'મારી માહિતી',
+
+    // Header
+    adminPanel: 'એડમિન પૅનલ',
+    anyService: 'એની સર્વિસ',
+    logout: 'લૉગ આઉટ',
+
+    // Login
+    login: 'લૉગ ઇન',
+    adminLogin: 'એડમિન લૉગ ઇન',
+    workerLogin: 'કામદાર લૉગ ઇન',
+    manageWorkers: 'કામદારો અને રિપોર્ટ',
+    markAttendance: 'હાજરી અને આંકડા',
+    selectYourName: 'તમારું નામ પસંદ કરો',
+    enterAdminPassword: 'એડમિન પાસવર્ડ દાખલ કરો',
+    enterPin: 'તમારો 4 અંકનો PIN દાખલ કરો',
+    defaultPin: 'ડિફૉલ્ટ: 0000',
+    back: 'પાછળ',
+    enter: 'પ્રવેશ',
+    noWorkersContact: 'કોઈ કામદાર નથી. એડમિનનો સંપર્ક કરો.',
+    tooManyAttempts: 'ઘણા પ્રયત્નો. અવરોધ',
+    lockedOut: 'અવરોધ',
+    minutes: 'મિનિટ',
+    tryAgainIn: 'ફરી પ્રયત્ન',
+    attemptsLeft: 'પ્રયત્ન બાકી',
+    incorrectPassword: 'ખોટો પાસવર્ડ.',
+    incorrectPin: 'ખોટો PIN.',
+
+    // Dashboard
+    present: 'હાજર',
+    absent: 'ગૅરહાજર',
+    halfDay: 'અડધો દિ',
+    notMarked: 'નોંધ નહિ',
+    monthlySummary: 'માસિક સારાંશ',
+    totalEarned: 'કુલ કમાઈ',
+    totalAdvance: 'કુલ એડવાન્સ',
+    netPayable: 'ચૂકવણી',
+    workerBalances: 'કામદાર બૅલૅન્સ',
+    noWorkers: 'કોઈ કામદાર નથી.',
+    goToWorkers: 'કામદારો ટૅબ પર જઈ ઉમેરો.',
+    attendanceWindow: 'હાજરી',
+
+    // Workers
+    addNewWorker: '+ નવો કામદાર',
+    noWorkersYet: 'કોઈ કામદાર ઉમેરવામાં આવ્યો નથી.',
+    tapToAdd: '"+ નવો કામદાર" ટૅપ કરો.',
+    edit: 'ફેરફાર',
+    remove: 'દૂર',
+    perDay: '/દિ',
+    confirmRemove: '{name} ને હટાવવો? હાજરી રહેશે.',
+    addWorkersFirst: 'પ્રથમ કામદારો ઉમેરો.',
+
+    // Worker Form
+    workerName: 'નામ',
+    name: 'નામ *',
+    phone: 'ફોન',
+    loginPin: 'PIN (4 અંક)',
+    pinDefault: 'ખાલી રહે તો 0000.',
+    dailyWage: 'રોજ (₹) *',
+    addWorker: 'ઉમેરો',
+    editWorker: 'ફેરફાર',
+    updateWorker: 'અપડેટ',
+    cancel: 'રદ',
+    workerNamePlaceholder: 'કામદારનું નામ',
+    phonePlaceholder: 'ફોન નંબર',
+    wagePlaceholder: 'દા.ત. 500',
+
+    // Attendance
+    manageAttendance: 'હાજરી',
+    markTodayAttendance: 'આજ ની હાજરી',
+    daily: 'રોજ',
+    calendar: 'કૅલૅન્ડર',
+    allPresent: 'બધા હાજર',
+    allAbsent: 'બધા ગૅરહાજર',
+    notMarkedStatus: 'નોંધ નહિ',
+    addWorkersFirstAttendance: 'પ્રથમ કામદારો ઉમેરો.',
+
+    // Worker Attendance
+    modificationsRemaining: 'ફેરફારો બાકી:',
+    clearAttendance: 'હાજરી સાફ',
+    recentAttendance: 'તાજી હાજરી',
+    noAttendanceYet: 'કોઈ હાજરી નોંધ નથી.',
+    contactAdmin: 'ફેરફાર માટે એડમિનનો સંપર્ક કરો.',
+    windowOpen: '{mins} મિ. માં ખૂલે (8:30 AM)',
+    windowClosed: 'આજ હાજરી બંધ (11:00 AM)',
+    windowCloses: '{mins} મિ. માં બંધ',
+    usedAllMods: 'આજ ફેરફારો ખલ્લાસ. એડમિન સંપર્ક.',
+
+    // Worker Dashboard
+    hello: 'નમસ્તે',
+    monthlySummaryTag: 'આ રહ્યો તમારો માસિક સારાંશ',
+    advanceTaken: 'ઉઠાવ્યો',
+    netBalance: 'ચોખ્ખું',
+    calendarTitle: 'કૅલૅન્ડર',
+    workerNotFound: 'કામદાર મળ્યો નહિ. એડમિન સંપર્ક.',
+
+    // Advances
+    thisMonthByWorker: 'આ મહિનો',
+    addAdvance: '+ એડવાન્સ',
+    allWorkers: 'બધા',
+    filter: 'ગાળો:',
+    noAdvanceRecords: 'કોઈ એડવાન્સ નથી.',
+    deleteAdvanceConfirm: 'આ એડવાન્સ ભૂ\u0902સી ન\u0902ખુ?',
+    addWorkersFirstAdvance: 'પ્રથમ કામદારો ઉમેરો.',
+    myAdvances: 'મારા એડવાન્સ',
+    thisMonth: 'આ મહિનો',
+    thisYear: 'આ વર્ષ',
+    allRecords: 'બધી નોંધ',
+    noAdvancesYet: 'કોઈ એડવાન્સ નહિ.',
+
+    // Advance Form
+    selectWorker: 'કામદાર',
+    selectWorkerPlaceholder: 'કામદાર પસંદ',
+    amount: 'રકમ (₹)',
+    date: 'તારીખ',
+    reason: 'કારણ (વૈકલ્પિક)',
+    reasonPlaceholder: 'દા.ત. દવા',
+    addAdvanceBtn: 'ઉમેરો',
+
+    // Reports
+    monthlyReport: '💾 મહિનાનો રિપોર્ટ',
+    yearlyReport: '💾 વાર્ષિક રિપોર્ટ',
+    worker: 'કામદાર',
+    wage: 'વેતન',
+    days: 'દિ.',
+    earned: 'કમાઈ',
+    advance: 'એડ.',
+    balance: 'બૅલૅ.',
+    total: 'કુલ',
+    addWorkersFirstReports: 'કામદારો ઉમેરી હાજરી નોંધો.',
+
+    // General
+    loading: 'લૉડ...',
+    syncLive: 'લાઇવ',
+    syncing: 'સિંક...',
+
+    // PWA
+    installApp: 'ASAR એપ ઇન્સ્ટોલ કરો',
+    iosInstall: 'શેર બટન દબાવો અને "Add to Home Screen" પસંદ કરો',
+    androidInstall: 'ઝડપી વપરાશ અને ઓફલાઇન સપોર્ટ માટે હોમ સ્ક્રીન પર ઉમેરો',
+    browserInstall: 'બ્રાઉઝર મેનુ (⋮) ખોલો અને "Install" પર ટેપ કરો',
+    install: 'ઇન્સ્ટોલ',
+    pwaManualAlert: "કૃપા કરીને બ્રાઉઝર મેનૂ ખોલો અને 'Install App' અથવા 'Add to Home Screen' પર ટેપ કરો.",
+
+    // Splash
+    attendanceRegister: 'હાજરી રજિસ્ટર',
+  },
+
+  hi: {
+    // Nav
+    dashboard: 'डैशबोर्ड',
+    workers: 'कर्मचारी',
+    attendance: 'हाजिरी',
+    advances: 'अग्रिम',
+    reports: 'रिपोर्ट',
+    myStats: 'मेरी जानकारी',
+
+    // Header
+    adminPanel: 'एडमिन पैनल',
+    anyService: 'एनी सर्विस',
+    logout: 'लॉग आउट',
+
+    // Login
+    login: 'लॉग इन',
+    adminLogin: 'एडमिन लॉग इन',
+    workerLogin: 'कर्मचारी लॉग इन',
+    manageWorkers: 'कर्मचारी और रिपोर्ट',
+    markAttendance: 'हाजिरी और आंकड़े',
+    selectYourName: 'अपना नाम चुनें',
+    enterAdminPassword: 'एडमिन पासवर्ड डालें',
+    enterPin: 'अपना 4 अंकों का PIN डालें',
+    defaultPin: 'डिफ़ॉल्ट: 0000',
+    back: 'वापस',
+    enter: 'प्रवेश',
+    noWorkersContact: 'अभी कोई कर्मचारी नहीं। एडमिन से संपर्क करें।',
+    tooManyAttempts: 'बहुत अधिक प्रयास। अवरुद्ध',
+    lockedOut: 'अवरुद्ध',
+    minutes: 'मिनट',
+    tryAgainIn: 'पुनः प्रयास',
+    attemptsLeft: 'प्रयास बचे',
+    incorrectPassword: 'गलत पासवर्ड।',
+    incorrectPin: 'गलत PIN।',
+
+    // Dashboard
+    present: 'उपस्थित',
+    absent: 'अनुपस्थित',
+    halfDay: 'आधा दिन',
+    notMarked: 'चिह्नित नहीं',
+    monthlySummary: 'मासिक सारांश',
+    totalEarned: 'कुल कमाई',
+    totalAdvance: 'कुल अग्रिम',
+    netPayable: 'शुद्ध देय',
+    workerBalances: 'कर्मचारी बैलेंस',
+    noWorkers: 'अभी कोई कर्मचारी नहीं।',
+    goToWorkers: 'कर्मचारी टैब पर जाएं।',
+    attendanceWindow: 'हाजिरी',
+
+    // Workers
+    addNewWorker: '+ नया कर्मचारी',
+    noWorkersYet: 'अभी कोई कर्मचारी नहीं।',
+    tapToAdd: '"+ नया कर्मचारी" टैप करें।',
+    edit: 'संपादित',
+    remove: 'हटाएं',
+    perDay: '/दिन',
+    confirmRemove: '{name} को हटाएं? रिकॉर्ड सुरक्षित रहेगी।',
+    addWorkersFirst: 'पहले कर्मचारी जोड़ें।',
+
+    // Worker Form
+    workerName: 'नाम',
+    name: 'नाम *',
+    phone: 'फोन',
+    loginPin: 'PIN (4 अंक)',
+    pinDefault: 'खाली रहने पर 0000।',
+    dailyWage: 'दैनिक वेतन (₹) *',
+    addWorker: 'जोड़ें',
+    editWorker: 'संपादित करें',
+    updateWorker: 'अपडेट',
+    cancel: 'रद्द',
+    workerNamePlaceholder: 'कर्मचारी का नाम',
+    phonePlaceholder: 'फोन नंबर',
+    wagePlaceholder: 'जैसे 500',
+
+    // Attendance
+    manageAttendance: 'हाजिरी',
+    markTodayAttendance: 'आज की हाजिरी',
+    daily: 'दैनिक',
+    calendar: 'कैलेंडर',
+    allPresent: 'सभी उपस्थित',
+    allAbsent: 'सभी अनुपस्थित',
+    notMarkedStatus: 'चिह्नित नहीं',
+    addWorkersFirstAttendance: 'पहले कर्मचारी जोड़ें।',
+
+    // Worker Attendance
+    modificationsRemaining: 'आज के बदलाव बचे:',
+    clearAttendance: 'हाजिरी साफ करें',
+    recentAttendance: 'हालिया हाजिरी',
+    noAttendanceYet: 'कोई हाजिरी नहीं।',
+    contactAdmin: 'बदलाव के लिए एडमिन से संपर्क करें।',
+    windowOpen: '{mins} मिनट में खुलेगा (8:30 AM)',
+    windowClosed: 'आज हाजिरी बंद (11:00 AM)',
+    windowCloses: '{mins} मिनट में बंद',
+    usedAllMods: 'आज के सभी बदलाव हो गए। एडमिन से संपर्क करें।',
+
+    // Worker Dashboard
+    hello: 'नमस्ते',
+    monthlySummaryTag: 'यहाँ आपका मासिक सारांश है',
+    advanceTaken: 'लिया गया',
+    netBalance: 'शुद्ध',
+    calendarTitle: 'कैलेंडर',
+    workerNotFound: 'कर्मचारी नहीं मिला। एडमिन से संपर्क करें।',
+
+    // Advances
+    thisMonthByWorker: 'इस महीने',
+    addAdvance: '+ अग्रिम जोड़ें',
+    allWorkers: 'सभी',
+    filter: 'फ़िल्टर:',
+    noAdvanceRecords: 'कोई अग्रिम नहीं।',
+    deleteAdvanceConfirm: 'यह अग्रिम हटाएं?',
+    addWorkersFirstAdvance: 'पहले कर्मचारी जोड़ें।',
+    myAdvances: 'मेरे अग्रिम',
+    thisMonth: 'इस महीने',
+    thisYear: 'इस साल',
+    allRecords: 'सभी रिकॉर्ड',
+    noAdvancesYet: 'कोई अग्रिम नहीं।',
+
+    // Advance Form
+    selectWorker: 'कर्मचारी',
+    selectWorkerPlaceholder: 'कर्मचारी चुनें',
+    amount: 'राशि (₹)',
+    date: 'तारीख',
+    reason: 'कारण (वैकल्पिक)',
+    reasonPlaceholder: 'जैसे दवा',
+    addAdvanceBtn: 'जोड़ें',
+
+    // Reports
+    monthlyReport: '💾 मासिक रिपोर्ट',
+    yearlyReport: '💾 वार्षिक रिपोर्ट',
+    worker: 'कर्मचारी',
+    wage: 'वेतन',
+    days: 'दिन',
+    earned: 'कमाई',
+    advance: 'अग्रिम',
+    balance: 'बैलेंस',
+    total: 'कुल',
+    addWorkersFirstReports: 'कर्मचारी जोड़कर हाजिरी दर्ज करें।',
+
+    // General
+    loading: 'लोड हो रहा है...',
+    syncLive: 'लाइव',
+    syncing: 'सिंक...',
+
+    // PWA
+    installApp: 'ASAR ऐप इंस्टॉल करें',
+    iosInstall: 'शेयर पर टैप करें और "Add to Home Screen" चुनें',
+    androidInstall: 'तेज़ पहुंच और ऑफलाइन सहायता के लिए होम स्क्रीन पर जोड़ें',
+    browserInstall: 'ब्राउज़र मेनू (⋮) खोलें और "Install" पर टैप करें',
+    install: 'इंस्टॉल',
+    pwaManualAlert: "कृपया ब्राउज़र मेनू खोलें और 'Install App' या 'Add to Home Screen' पर टैप करें।",
+
+    // Splash
+    attendanceRegister: 'हाजिरी रजिस्टर',
+  },
+};
+
+export default translations;

@@ -1,60 +1,56 @@
 import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { getCurrentUser } from '../utils/auth';
-import { getAttendance, markAttendance, getModificationCount, getAttendanceWindowStatus } from '../utils/storage';
+import { useAttendance } from '../hooks/useData';
+import { getAttendanceWindowStatus, getModificationCount } from '../utils/db';
+import { useTranslation } from '../utils/i18n';
 import './WorkerAttendance.css';
 
 export default function WorkerAttendance() {
+  const { t } = useTranslation();
   const user = getCurrentUser();
   const workerId = user?.workerId;
-  const [refresh, setRefresh] = useState(0);
+
+  const { attendance, markAttendance } = useAttendance(workerId);
 
   const today = format(new Date(), 'yyyy-MM-dd');
   const windowStatus = getAttendanceWindowStatus();
   const modCount = getModificationCount(workerId, today);
   const modRemaining = Math.max(0, 2 - modCount);
 
-  const allAttendance = useMemo(() => {
-    refresh;
-    return getAttendance();
-  }, [refresh]);
-
   const todayStatus = useMemo(() => {
-    const rec = allAttendance.find(a => a.workerId === workerId && a.date === today);
+    const rec = attendance.find(a => a.workerId === workerId && a.date === today);
     return rec?.status || null;
-  }, [allAttendance, workerId, today, refresh]);
+  }, [attendance, workerId, today]);
 
-  const handleMark = (status) => {
+  const handleMark = async (status) => {
     if (!windowStatus.open) return;
     if (modRemaining <= 0 && todayStatus !== status) return;
-
-    const result = markAttendance(workerId, today, status, false);
-    if (!result.success) {
+    const result = await markAttendance(workerId, today, status, false);
+    if (result && !result.success) {
       alert(result.reason);
     }
-    setRefresh(r => r + 1);
   };
 
-  const handleClear = () => {
-    if (!windowStatus.open) return;
-    if (modRemaining <= 0) return;
-    const result = markAttendance(workerId, today, null, false);
-    if (!result.success) {
+  const handleClear = async () => {
+    if (!windowStatus.open || modRemaining <= 0) return;
+    const result = await markAttendance(workerId, today, null, false);
+    if (result && !result.success) {
       alert(result.reason);
     }
-    setRefresh(r => r + 1);
   };
 
-  const recentAttendance = useMemo(() => {
-    return allAttendance
+  const recentAttendance = useMemo(() =>
+    [...attendance]
       .filter(a => a.workerId === workerId)
       .sort((a, b) => b.date.localeCompare(a.date))
-      .slice(0, 10);
-  }, [allAttendance, workerId, refresh]);
+      .slice(0, 10),
+    [attendance, workerId]
+  );
 
   return (
     <div className="worker-attendance">
-      <h2>Mark Today's Attendance</h2>
+      <h2>{t('markTodayAttendance')}</h2>
       <p className="date-label">{format(new Date(), 'EEEE, dd MMMM yyyy')}</p>
 
       <div className={`window-status ${windowStatus.open ? 'open' : 'closed'}`}>
@@ -63,7 +59,7 @@ export default function WorkerAttendance() {
       </div>
 
       <div className="mod-counter">
-        <span>Modifications remaining today: </span>
+        <span>{t('modificationsRemaining')} </span>
         <strong className={modRemaining > 0 ? 'has-remaining' : 'no-remaining'}>
           {modRemaining} / 2
         </strong>
@@ -76,7 +72,7 @@ export default function WorkerAttendance() {
           disabled={!windowStatus.open || (modRemaining <= 0 && todayStatus !== 'present')}
         >
           <span className="mark-icon">&#9989;</span>
-          <span>Present</span>
+          <span>{t('present')}</span>
         </button>
         <button
           className={`mark-btn half ${todayStatus === 'half' ? 'active' : ''}`}
@@ -84,7 +80,7 @@ export default function WorkerAttendance() {
           disabled={!windowStatus.open || (modRemaining <= 0 && todayStatus !== 'half')}
         >
           <span className="mark-icon">&#9728;</span>
-          <span>Half Day</span>
+          <span>{t('halfDay')}</span>
         </button>
         <button
           className={`mark-btn absent ${todayStatus === 'absent' ? 'active' : ''}`}
@@ -92,32 +88,28 @@ export default function WorkerAttendance() {
           disabled={!windowStatus.open || (modRemaining <= 0 && todayStatus !== 'absent')}
         >
           <span className="mark-icon">&#10060;</span>
-          <span>Absent</span>
+          <span>{t('absent')}</span>
         </button>
       </div>
 
       {todayStatus && modRemaining > 0 && (
-        <button className="clear-btn" onClick={handleClear}>
-          Clear my attendance
-        </button>
+        <button className="clear-btn" onClick={handleClear}>{t('clearAttendance')}</button>
       )}
 
       {!windowStatus.open && modRemaining <= 0 && (
-        <div className="admin-note">
-          Contact admin to modify your attendance.
-        </div>
+        <div className="admin-note">{t('contactAdmin')}</div>
       )}
 
-      <h3>Recent Attendance</h3>
+      <h3>{t('recentAttendance')}</h3>
       <div className="recent-list">
         {recentAttendance.length === 0 ? (
-          <div className="empty-state"><p>No attendance records yet.</p></div>
+          <div className="empty-state"><p>{t('noAttendanceYet')}</p></div>
         ) : (
           recentAttendance.map(a => (
             <div key={`${a.workerId}_${a.date}`} className={`recent-item ${a.status}`}>
               <span className="recent-date">{format(new Date(a.date + 'T00:00:00'), 'dd MMM yyyy')}</span>
               <span className={`recent-status ${a.status}`}>
-                {a.status === 'present' ? 'Present' : a.status === 'half' ? 'Half Day' : 'Absent'}
+                {a.status === 'present' ? t('present') : a.status === 'half' ? t('halfDay') : t('absent')}
               </span>
             </div>
           ))

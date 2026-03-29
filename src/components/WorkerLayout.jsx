@@ -1,10 +1,12 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { logout, getCurrentUser } from '../utils/auth';
+import { useTranslation } from '../utils/i18n';
 import './WorkerLayout.css';
 
 export default function WorkerLayout() {
   const navigate = useNavigate();
   const user = getCurrentUser();
+  const { t, cycleLang, LANG_LABELS, lang } = useTranslation();
 
   const handleLogout = () => {
     logout();
@@ -20,12 +22,17 @@ export default function WorkerLayout() {
           </div>
           <div>
             <h1>{user?.name || 'Worker'}</h1>
-            <span className="header-sub">Any Service</span>
+            <span className="header-sub">{t('anyService')}</span>
           </div>
         </div>
-        <button className="logout-btn" onClick={handleLogout} title="Logout">
-          &#9211;
-        </button>
+        <div className="header-actions">
+          <button className="lang-btn" onClick={cycleLang} title="Change Language">
+            {LANG_LABELS[lang]}
+          </button>
+          <button className="logout-btn" onClick={handleLogout} title={t('logout')}>
+            &#9211;
+          </button>
+        </div>
       </header>
       <main className="app-main">
         <Outlet />
@@ -33,15 +40,15 @@ export default function WorkerLayout() {
       <nav className="app-bottom-nav">
         <NavLink to="/worker" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <span className="nav-icon">&#128200;</span>
-          <span className="nav-label">My Stats</span>
+          <span className="nav-label">{t('myStats')}</span>
         </NavLink>
         <NavLink to="/worker/attendance" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <span className="nav-icon">&#9745;</span>
-          <span className="nav-label">Attendance</span>
+          <span className="nav-label">{t('attendance')}</span>
         </NavLink>
         <NavLink to="/worker/advances" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <span className="nav-icon">&#8377;</span>
-          <span className="nav-label">Advances</span>
+          <span className="nav-label">{t('advances')}</span>
         </NavLink>
       </nav>
     </div>

@@ -1,87 +1,133 @@
-import { useState, useEffect, useCallback } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { supabase } from '../utils/supabase';
 import {
-  getWorkers, addWorker as addWorkerToStorage, updateWorker as updateWorkerInStorage,
-  deleteWorker as deleteWorkerFromStorage,
-  getAttendance, markAttendance as markAttendanceInStorage,
-  getAdvances, addAdvance as addAdvanceToStorage, deleteAdvance as deleteAdvanceFromStorage,
-  getMonthlyStats, getWorkerBalance
-} from '../utils/storage';
+  fetchWorkers, addWorkerDB, updateWorkerDB, deleteWorkerDB,
+  fetchAttendance, markAttendanceDB,
+  fetchAdvances, addAdvanceDB, deleteAdvanceDB,
+  computeMonthlyStats, computeWorkerBalance,
+  canMarkAttendance, incrementModification,
+} from '../utils/db';
 
+// ─── Workers ──────────────────────────────────────────────────────────────────
 export function useWorkers() {
   const [workers, setWorkers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    const data = await fetchWorkers();
+    setWorkers(data);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    setWorkers(getWorkers());
+    load();
+    const channel = supabase
+      .channel('workers-rt')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'workers' }, load)
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [load]);
+
+  const addWorker = useCallback(async (worker) => {
+    await addWorkerDB(worker);
+    // Real-time will trigger load()
   }, []);
 
-  const add = useCallback((worker) => {
-    const newWorker = { ...worker, id: uuidv4(), createdAt: new Date().toISOString() };
-    setWorkers(addWorkerToStorage(newWorker));
+  const updateWorker = useCallback(async (id, updates) => {
+    await updateWorkerDB(id, updates);
   }, []);
 
-  const update = useCallback((id, updates) => {
-    setWorkers(updateWorkerInStorage(id, updates));
+  const deleteWorker = useCallback(async (id) => {
+    await deleteWorkerDB(id);
   }, []);
 
-  const remove = useCallback((id) => {
-    setWorkers(deleteWorkerFromStorage(id));
-  }, []);
-
-  return { workers, addWorker: add, updateWorker: update, deleteWorker: remove };
+  return { workers, loading, addWorker, updateWorker, deleteWorker };
 }
 
-export function useAttendance() {
+// ─── Attendance ───────────────────────────────────────────────────────────────
+export function useAttendance(workerId = null) {
   const [attendance, setAttendance] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const workerIdRef = useRef(workerId);
+  workerIdRef.current = workerId;
 
-  useEffect(() => {
-    setAttendance(getAttendance());
+  const load = useCallback(async () => {
+    const data = await fetchAttendance(workerIdRef.current);
+    setAttendance(data);
+    setLoading(false);
   }, []);
 
-  const mark = useCallback((workerId, date, status, isAdmin = false) => {
-    const result = markAttendanceInStorage(workerId, date, status, isAdmin);
-    if (result.success !== undefined) {
-      setAttendance(result.attendance);
-      return result;
+  useEffect(() => {
+    load();
+    const channel = supabase
+      .channel('attendance-rt')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance' }, load)
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [load]);
+
+  const markAttendance = useCallback(async (wId, date, status, isAdmin = false) => {
+    if (!isAdmin) {
+      const check = canMarkAttendance(wId);
+      if (!check.allowed && status !== null) {
+        return { success: false, reason: check.reason };
+      }
+      incrementModification(wId, date);
     }
-    setAttendance(result);
-    return { success: true, reason: null };
+    try {
+      await markAttendanceDB(wId, date, status);
+      return { success: true, reason: null };
+    } catch (err) {
+      console.error('markAttendance error:', err);
+      return { success: false, reason: err.message };
+    }
   }, []);
 
-  const getByDate = useCallback((date) => {
-    return attendance.filter(a => a.date === date);
-  }, [attendance]);
-
-  return { attendance, markAttendance: mark, getByDate };
+  return { attendance, loading, markAttendance };
 }
 
-export function useAdvances() {
+// ─── Advances ─────────────────────────────────────────────────────────────────
+export function useAdvances(workerId = null) {
   const [advances, setAdvances] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const workerIdRef = useRef(workerId);
+  workerIdRef.current = workerId;
+
+  const load = useCallback(async () => {
+    const data = await fetchAdvances(workerIdRef.current);
+    setAdvances(data);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    setAdvances(getAdvances());
+    load();
+    const channel = supabase
+      .channel('advances-rt')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'advances' }, load)
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [load]);
+
+  const addAdvance = useCallback(async (advance) => {
+    await addAdvanceDB(advance);
   }, []);
 
-  const add = useCallback((advance) => {
-    const newAdvance = { ...advance, id: uuidv4(), createdAt: new Date().toISOString() };
-    setAdvances(addAdvanceToStorage(newAdvance));
+  const deleteAdvance = useCallback(async (id) => {
+    await deleteAdvanceDB(id);
   }, []);
 
-  const remove = useCallback((id) => {
-    setAdvances(deleteAdvanceFromStorage(id));
-  }, []);
-
-  return { advances, addAdvance: add, deleteAdvance: remove };
+  return { advances, loading, addAdvance, deleteAdvance };
 }
 
-export function useStats() {
-  const getStats = useCallback((workerId, year, month) => {
-    return getMonthlyStats(workerId, year, month);
-  }, []);
+// ─── Stats (computed from in-memory data) ─────────────────────────────────────
+export function useStats(workers, attendance, advances) {
+  const getStats = useCallback((wId, year, month) => {
+    return computeMonthlyStats(wId, year, month, attendance, advances);
+  }, [attendance, advances]);
 
-  const getBalance = useCallback((workerId, year, month) => {
-    return getWorkerBalance(workerId, year, month);
-  }, []);
+  const getBalance = useCallback((wId, year, month) => {
+    return computeWorkerBalance(wId, year, month, workers, attendance, advances);
+  }, [workers, attendance, advances]);
 
   return { getStats, getBalance };
 }

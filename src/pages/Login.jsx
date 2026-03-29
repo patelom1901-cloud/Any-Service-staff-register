@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { verifyAdminPassword, setCurrentUser, verifyWorkerPin } from '../utils/auth';
-import { getWorkers } from '../utils/storage';
 import { checkRateLimit, recordFailedAttempt, resetRateLimit } from '../utils/security';
+import { migrateLocalStorageToSupabase } from '../utils/db';
+import { useWorkers } from '../hooks/useData';
+import { useTranslation } from '../utils/i18n';
 import './Login.css';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [mode, setMode] = useState(null);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -14,58 +17,51 @@ export default function Login() {
   const [pin, setPin] = useState('');
   const [lockoutTimer, setLockoutTimer] = useState(0);
 
-  const workers = getWorkers();
+  const { workers, loading: workersLoading } = useWorkers();
 
-  // Admin Rate Limit timer
   useEffect(() => {
     let timer;
     if (lockoutTimer > 0) {
-      timer = setInterval(() => {
-        setLockoutTimer(prev => prev - 1);
-      }, 1000);
+      timer = setInterval(() => setLockoutTimer(p => p - 1), 1000);
     }
     return () => clearInterval(timer);
   }, [lockoutTimer]);
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
-    
-    // Check Rate limit first
     const limit = checkRateLimit('admin_login');
     if (!limit.allowed) {
       setLockoutTimer(limit.remainingSecs);
-      setError(`Too many attempts. Blocked for ${Math.ceil(limit.remainingSecs / 60)} minutes.`);
+      setError(`${t('tooManyAttempts')} ${Math.ceil(limit.remainingSecs / 60)} ${t('minutes')}.`);
       return;
     }
-
     const isValid = await verifyAdminPassword(password);
-    
     if (isValid) {
       resetRateLimit('admin_login');
       setCurrentUser('admin');
+      // Migrate any existing localStorage data to Supabase (runs once)
+      migrateLocalStorageToSupabase();
       navigate('/admin');
     } else {
       recordFailedAttempt('admin_login');
-      const updatedLimit = checkRateLimit('admin_login');
-      if (!updatedLimit.allowed) {
-        setLockoutTimer(updatedLimit.remainingSecs);
-        setError(`Locked out for ${Math.ceil(updatedLimit.remainingSecs / 60)} minutes.`);
+      const upd = checkRateLimit('admin_login');
+      if (!upd.allowed) {
+        setLockoutTimer(upd.remainingSecs);
+        setError(`${t('lockedOut')} ${Math.ceil(upd.remainingSecs / 60)} ${t('minutes')}.`);
       } else {
-        setError(`Incorrect password. ${updatedLimit.attemptsLeft} attempts left.`);
+        setError(`${t('incorrectPassword')} ${upd.attemptsLeft} ${t('attemptsLeft')}.`);
       }
     }
   };
 
   const handleWorkerLogin = (e) => {
     e.preventDefault();
-    
     const limit = checkRateLimit(`worker_login_${selectedWorker.id}`);
     if (!limit.allowed) {
       setLockoutTimer(limit.remainingSecs);
-      setError(`Too many attempts. Blocked for ${Math.ceil(limit.remainingSecs / 60)} minutes.`);
+      setError(`${t('tooManyAttempts')} ${Math.ceil(limit.remainingSecs / 60)} ${t('minutes')}.`);
       return;
     }
-
     const isValid = verifyWorkerPin(selectedWorker, pin);
     if (isValid) {
       resetRateLimit(`worker_login_${selectedWorker.id}`);
@@ -73,12 +69,12 @@ export default function Login() {
       navigate('/worker');
     } else {
       recordFailedAttempt(`worker_login_${selectedWorker.id}`);
-      const updatedLimit = checkRateLimit(`worker_login_${selectedWorker.id}`);
-      if (!updatedLimit.allowed) {
-        setLockoutTimer(updatedLimit.remainingSecs);
-        setError(`Locked out for ${Math.ceil(updatedLimit.remainingSecs / 60)} minutes.`);
+      const upd = checkRateLimit(`worker_login_${selectedWorker.id}`);
+      if (!upd.allowed) {
+        setLockoutTimer(upd.remainingSecs);
+        setError(`${t('lockedOut')} ${Math.ceil(upd.remainingSecs / 60)} ${t('minutes')}.`);
       } else {
-        setError(`Incorrect PIN. ${updatedLimit.attemptsLeft} attempts left.`);
+        setError(`${t('incorrectPin')} ${upd.attemptsLeft} ${t('attemptsLeft')}.`);
       }
     }
   };
@@ -88,11 +84,7 @@ export default function Login() {
     setPin('');
     setError('');
     const limit = checkRateLimit(`worker_login_${worker.id}`);
-    if (!limit.allowed) {
-        setLockoutTimer(limit.remainingSecs);
-    } else {
-        setLockoutTimer(0);
-    }
+    setLockoutTimer(!limit.allowed ? limit.remainingSecs : 0);
   };
 
   return (
@@ -108,16 +100,16 @@ export default function Login() {
           <button className="login-btn admin" onClick={() => { setMode('admin'); setPassword(''); setError(''); setLockoutTimer(0); }}>
             <span className="login-btn-icon">&#128274;</span>
             <div>
-              <strong>Admin Login</strong>
-              <span>Manage workers & reports</span>
+              <strong>{t('adminLogin')}</strong>
+              <span>{t('manageWorkers')}</span>
             </div>
             <span className="login-arrow">&#8250;</span>
           </button>
           <button className="login-btn worker" onClick={() => { setMode('worker'); setSelectedWorker(null); setError(''); setLockoutTimer(0); }}>
             <span className="login-btn-icon">&#128100;</span>
             <div>
-              <strong>Worker Login</strong>
-              <span>Mark attendance & view stats</span>
+              <strong>{t('workerLogin')}</strong>
+              <span>{t('markAttendance')}</span>
             </div>
             <span className="login-arrow">&#8250;</span>
           </button>
@@ -126,34 +118,33 @@ export default function Login() {
 
       {mode === 'admin' && (
         <form className="login-form" onSubmit={handleAdminLogin}>
-          <h3>Admin Login</h3>
+          <h3>{t('adminLogin')}</h3>
           <input
             type="password"
             value={password}
             onChange={e => { setPassword(e.target.value); setError(''); }}
-            placeholder="Enter admin password"
+            placeholder={t('enterAdminPassword')}
             disabled={lockoutTimer > 0}
             autoFocus
           />
           {error && <p className="login-error">{error}</p>}
-          {lockoutTimer > 0 && <p className="lockout-text">Try again in {lockoutTimer}s</p>}
-          
+          {lockoutTimer > 0 && <p className="lockout-text">{t('tryAgainIn')} {lockoutTimer}s</p>}
           <div className="login-form-actions">
-            <button type="submit" className="btn btn-primary" disabled={lockoutTimer > 0}>Login</button>
-            <button type="button" className="btn btn-ghost" onClick={() => { setMode(null); setPassword(''); setError(''); }}>
-              Back
-            </button>
+            <button type="submit" className="btn btn-primary" disabled={lockoutTimer > 0}>{t('login')}</button>
+            <button type="button" className="btn btn-ghost" onClick={() => { setMode(null); setPassword(''); setError(''); }}>{t('back')}</button>
           </div>
         </form>
       )}
 
       {mode === 'worker' && !selectedWorker && (
         <div className="worker-select">
-          <h3>Select Your Name</h3>
-          {workers.length === 0 ? (
+          <h3>{t('selectYourName')}</h3>
+          {workersLoading ? (
+            <div className="login-empty"><p>{t('loading')}</p></div>
+          ) : workers.length === 0 ? (
             <div className="login-empty">
               <span>&#128679;</span>
-              <p>No workers added yet.<br/>Contact admin to add workers.</p>
+              <p>{t('noWorkersContact')}</p>
             </div>
           ) : (
             <div className="worker-list-select">
@@ -166,16 +157,14 @@ export default function Login() {
               ))}
             </div>
           )}
-          <button className="btn btn-ghost back-btn" onClick={() => setMode(null)}>
-            Back
-          </button>
+          <button className="btn btn-ghost back-btn" onClick={() => setMode(null)}>{t('back')}</button>
         </div>
       )}
 
       {mode === 'worker' && selectedWorker && (
         <form className="login-form" onSubmit={handleWorkerLogin}>
-          <h3>Welcome, {selectedWorker.name}</h3>
-          <p className="pin-hint">Enter your 4-digit PIN (default: 0000)</p>
+          <h3>{selectedWorker.name}</h3>
+          <p className="pin-hint">{t('enterPin')} ({t('defaultPin')})</p>
           <input
             type="password"
             pattern="[0-9]*"
@@ -189,13 +178,10 @@ export default function Login() {
             autoFocus
           />
           {error && <p className="login-error">{error}</p>}
-          {lockoutTimer > 0 && <p className="lockout-text">Try again in {lockoutTimer}s</p>}
-
+          {lockoutTimer > 0 && <p className="lockout-text">{t('tryAgainIn')} {lockoutTimer}s</p>}
           <div className="login-form-actions">
-             <button type="submit" className="btn btn-primary" disabled={lockoutTimer > 0}>Enter</button>
-             <button type="button" className="btn btn-ghost" onClick={() => { setSelectedWorker(null); setPin(''); setError(''); }}>
-                Back
-             </button>
+            <button type="submit" className="btn btn-primary" disabled={lockoutTimer > 0}>{t('enter')}</button>
+            <button type="button" className="btn btn-ghost" onClick={() => { setSelectedWorker(null); setPin(''); setError(''); }}>{t('back')}</button>
           </div>
         </form>
       )}

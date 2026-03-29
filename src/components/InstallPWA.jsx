@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../utils/i18n';
 import './InstallPWA.css';
 
 export default function InstallPWA() {
+  const { t } = useTranslation();
   const [showBanner, setShowBanner] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [deviceType, setDeviceType] = useState('desktop'); 
@@ -76,7 +78,7 @@ export default function InstallPWA() {
 
   const handleInstallClick = async () => {
     if (!deferredPrompt && deviceType !== 'ios') {
-      alert("Please open your browser menu and tap 'Install App' or 'Add to Home Screen'.");
+      alert(t('pwaManualAlert'));
       return;
     }
     
@@ -106,23 +108,23 @@ export default function InstallPWA() {
         </div>
         
         <div className="pwa-text">
-          <strong>Install ASAR App</strong>
+          <strong>{t('installApp')}</strong>
           <p>
              {deviceType === 'ios' && (
-                 <span>Tap Share <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> then <strong>"Add to Home Screen"</strong></span>
+                 <span>{t('iosInstall').split('"')[0]} <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> then <strong>"Add to Home Screen"</strong></span>
              )}
              {deviceType !== 'ios' && deferredPrompt && (
-                 <span>Add to home screen for faster access & offline support</span>
+                 <span>{t('androidInstall')}</span>
              )}
              {deviceType !== 'ios' && !deferredPrompt && (
-                 <span>Open browser menu (⋮) and tap <strong>Install</strong></span>
+                 <span>{t('browserInstall').split('"')[0]} (⋮) and tap <strong>Install</strong></span>
              )}
           </p>
         </div>
 
         {deferredPrompt && (
             <button className="pwa-install-btn" onClick={handleInstallClick}>
-                Install
+                {t('install')}
             </button>
         )}
 

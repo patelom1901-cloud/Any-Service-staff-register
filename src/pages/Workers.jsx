@@ -1,36 +1,38 @@
 import { useState } from 'react';
 import { useWorkers } from '../hooks/useData';
 import WorkerForm from '../components/WorkerForm';
+import { useTranslation } from '../utils/i18n';
 import './Workers.css';
 
 export default function Workers() {
+  const { t } = useTranslation();
   const { workers, addWorker, updateWorker, deleteWorker } = useWorkers();
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
-  const handleAdd = (data) => {
-    addWorker(data);
+  const handleAdd = async (data) => {
+    await addWorker(data);
     setShowForm(false);
   };
 
-  const handleUpdate = (data) => {
-    updateWorker(editingId, data);
+  const handleUpdate = async (data) => {
+    await updateWorker(editingId, data);
     setEditingId(null);
   };
 
-  const handleDelete = (id, name) => {
-    if (window.confirm(`Remove ${name}? Their attendance records will be kept.`)) {
-      deleteWorker(id);
+  const handleDelete = async (id, name) => {
+    if (window.confirm(t('confirmRemove').replace('{name}', name))) {
+      await deleteWorker(id);
     }
   };
 
   return (
     <div className="workers-page">
-      <h2>Workers</h2>
+      <h2>{t('workers')}</h2>
 
       {!showForm && !editingId && (
         <button className="add-worker-btn" onClick={() => setShowForm(true)}>
-          + Add New Worker
+          {t('addNewWorker')}
         </button>
       )}
 
@@ -42,8 +44,8 @@ export default function Workers() {
         {workers.length === 0 && !showForm ? (
           <div className="empty-state">
             <span>&#128101;</span>
-            <p>No workers added yet.</p>
-            <p>Tap "+ Add New Worker" to get started.</p>
+            <p>{t('noWorkersYet')}</p>
+            <p>{t('tapToAdd')}</p>
           </div>
         ) : (
           workers.map(w => (
@@ -57,12 +59,12 @@ export default function Workers() {
                     <div className="wc-info">
                       <h4>{w.name}</h4>
                       {w.phone && <p className="wc-phone">{w.phone}</p>}
-                      <p className="wc-wage">&#8377;{w.dailyWage}/day</p>
+                      <p className="wc-wage">&#8377;{w.dailyWage}{t('perDay')}</p>
                     </div>
                   </div>
                   <div className="wc-actions">
-                    <button className="wc-btn edit" onClick={() => setEditingId(w.id)}>Edit</button>
-                    <button className="wc-btn delete" onClick={() => handleDelete(w.id, w.name)}>Remove</button>
+                    <button className="wc-btn edit" onClick={() => setEditingId(w.id)}>{t('edit')}</button>
+                    <button className="wc-btn delete" onClick={() => handleDelete(w.id, w.name)}>{t('remove')}</button>
                   </div>
                 </>
               )}

@@ -1,20 +1,23 @@
 import { useState, useMemo } from 'react';
-import { format } from 'date-fns';
-import { useWorkers, useStats } from '../hooks/useData';
+import { useWorkers, useAttendance, useAdvances, useStats } from '../hooks/useData';
 import { exportMonthlyReport, exportYearlyReport } from '../utils/export';
+import { useTranslation } from '../utils/i18n';
 import './Reports.css';
 
 export default function Reports() {
+  const { t } = useTranslation();
   const { workers } = useWorkers();
-  const { getStats, getBalance } = useStats();
+  const { attendance } = useAttendance();
+  const { advances } = useAdvances();
+  const { getStats, getBalance } = useStats(workers, attendance, advances);
 
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [exportFormat, setExportFormat] = useState('xlsx');
 
-  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'];
+  const monthNames = ['January','February','March','April','May','June',
+    'July','August','September','October','November','December'];
 
   const years = useMemo(() => {
     const y = [];
@@ -22,29 +25,30 @@ export default function Reports() {
     return y;
   }, []);
 
-  const monthlyData = useMemo(() => {
-    return workers.map(w => {
-      const stats = getStats(w.id, selectedYear, selectedMonth);
-      const balance = getBalance(w.id, selectedYear, selectedMonth);
-      return { worker: w, stats, balance };
-    });
-  }, [workers, selectedYear, selectedMonth, getStats, getBalance]);
+  const monthlyData = useMemo(() =>
+    workers.map(w => ({
+      worker: w,
+      stats: getStats(w.id, selectedYear, selectedMonth),
+      balance: getBalance(w.id, selectedYear, selectedMonth),
+    })),
+    [workers, selectedYear, selectedMonth, getStats, getBalance]
+  );
 
-  const handleExportMonthly = () => exportMonthlyReport(selectedYear, selectedMonth, exportFormat);
-  const handleExportYearly = () => exportYearlyReport(selectedYear, exportFormat);
+  const handleExportMonthly = () => exportMonthlyReport(selectedYear, selectedMonth, exportFormat, workers, attendance, advances);
+  const handleExportYearly = () => exportYearlyReport(selectedYear, exportFormat, workers, attendance, advances);
 
   if (workers.length === 0) {
     return (
       <div className="reports-page">
-        <h2>Reports</h2>
-        <div className="empty-state"><p>Add workers and mark attendance to generate reports.</p></div>
+        <h2>{t('reports')}</h2>
+        <div className="empty-state"><p>{t('addWorkersFirstReports')}</p></div>
       </div>
     );
   }
 
   return (
     <div className="reports-page">
-      <h2>Reports</h2>
+      <h2>{t('reports')}</h2>
 
       <div className="report-filters">
         <select value={selectedMonth} onChange={e => setSelectedMonth(Number(e.target.value))}>
@@ -61,10 +65,10 @@ export default function Reports() {
 
       <div className="export-btns">
         <button className="export-btn monthly" onClick={handleExportMonthly}>
-          &#128190; Monthly Report
+          {t('monthlyReport')}
         </button>
         <button className="export-btn yearly" onClick={handleExportYearly}>
-          &#128190; Yearly Report ({selectedYear})
+          {t('yearlyReport')} ({selectedYear})
         </button>
       </div>
 
@@ -74,12 +78,12 @@ export default function Reports() {
         <table className="report-table">
           <thead>
             <tr>
-              <th>Worker</th>
-              <th>Wage</th>
-              <th>Days</th>
-              <th>Earned</th>
-              <th>Advance</th>
-              <th>Balance</th>
+              <th>{t('worker')}</th>
+              <th>{t('wage')}</th>
+              <th>{t('days')}</th>
+              <th>{t('earned')}</th>
+              <th>{t('advance')}</th>
+              <th>{t('balance')}</th>
             </tr>
           </thead>
           <tbody>
@@ -96,7 +100,7 @@ export default function Reports() {
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan="3"><strong>Total</strong></td>
+              <td colSpan="3"><strong>{t('total')}</strong></td>
               <td><strong>&#8377;{monthlyData.reduce((s, d) => s + d.balance.earned, 0)}</strong></td>
               <td><strong>&#8377;{monthlyData.reduce((s, d) => s + d.balance.advance, 0)}</strong></td>
               <td className={monthlyData.reduce((s, d) => s + d.balance.balance, 0) >= 0 ? 'positive' : 'negative'}>
