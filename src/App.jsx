@@ -13,10 +13,12 @@ import WorkerDashboard from './pages/WorkerDashboard';
 import WorkerAttendance from './pages/WorkerAttendance';
 import WorkerAdvances from './pages/WorkerAdvances';
 import './App.css';
+import InstallPWA from './components/InstallPWA';
 
 export default function App() {
   return (
     <BrowserRouter>
+      <InstallPWA />
       <Routes>
         <Route path="/" element={<Splash />} />
         <Route path="/login" element={<Login />} />
