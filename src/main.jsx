@@ -4,14 +4,11 @@ import './index.css'
 import App from './App.jsx'
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then((registration) => {
-        console.log('SW registered successfully:', registration.scope);
-      })
-      .catch((error) => {
-        console.error('SW registration failed:', error);
-      });
+  // Unregister service workers as they interfere with development
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (let registration of registrations) {
+      registration.unregister();
+    }
   });
 }
 
