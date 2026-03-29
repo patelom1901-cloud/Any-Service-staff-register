@@ -29,16 +29,30 @@ export function useWorkers() {
   }, [load]);
 
   const addWorker = useCallback(async (worker) => {
-    await addWorkerDB(worker);
-    // Real-time will trigger load()
+    try {
+      await addWorkerDB(worker);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }, []);
 
   const updateWorker = useCallback(async (id, updates) => {
-    await updateWorkerDB(id, updates);
+    try {
+      await updateWorkerDB(id, updates);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }, []);
 
   const deleteWorker = useCallback(async (id) => {
-    await deleteWorkerDB(id);
+    try {
+      await deleteWorkerDB(id);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }, []);
 
   return { workers, loading, addWorker, updateWorker, deleteWorker };
@@ -108,11 +122,21 @@ export function useAdvances(workerId = null) {
   }, [load]);
 
   const addAdvance = useCallback(async (advance) => {
-    await addAdvanceDB(advance);
+    try {
+      await addAdvanceDB(advance);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }, []);
 
   const deleteAdvance = useCallback(async (id) => {
-    await deleteAdvanceDB(id);
+    try {
+      await deleteAdvanceDB(id);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }, []);
 
   return { advances, loading, addAdvance, deleteAdvance };

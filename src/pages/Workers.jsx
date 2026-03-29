@@ -11,18 +11,41 @@ export default function Workers() {
   const [showForm, setShowForm] = useState(false);
 
   const handleAdd = async (data) => {
-    await addWorker(data);
-    setShowForm(false);
+    try {
+      const res = await addWorker(data);
+      if (res && res.error) {
+        alert(res.error);
+      } else {
+        setShowForm(false);
+      }
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   const handleUpdate = async (data) => {
-    await updateWorker(editingId, data);
-    setEditingId(null);
+    try {
+      const res = await updateWorker(editingId, data);
+      if (res && res.error) {
+        alert(res.error);
+      } else {
+        setEditingId(null);
+      }
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   const handleDelete = async (id, name) => {
     if (window.confirm(t('confirmRemove').replace('{name}', name))) {
-      await deleteWorker(id);
+      try {
+        const res = await deleteWorker(id);
+        if (res && res.error) {
+          alert(res.error);
+        }
+      } catch (err) {
+        alert(err.message);
+      }
     }
   };
 
