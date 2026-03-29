@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { getCurrentUser } from '../utils/auth';
 import { useAttendance } from '../hooks/useData';
-import { getAttendanceWindowStatus, getModificationCount } from '../utils/db';
+import { getAttendanceWindowStatus } from '../utils/db';
 import { useTranslation } from '../utils/i18n';
 import './WorkerAttendance.css';
 
@@ -15,13 +15,15 @@ export default function WorkerAttendance() {
 
   const today = format(new Date(), 'yyyy-MM-dd');
   const windowStatus = getAttendanceWindowStatus();
-  const modCount = getModificationCount(workerId, today);
-  const modRemaining = Math.max(0, 2 - modCount);
+  
+  const todayRecord = useMemo(() => 
+    attendance.find(a => a.workerId === workerId && a.date === today),
+    [attendance, workerId, today]
+  );
+  
+  const modRemaining = Math.max(0, 2 - (todayRecord?.modCount || 0));
 
-  const todayStatus = useMemo(() => {
-    const rec = attendance.find(a => a.workerId === workerId && a.date === today);
-    return rec?.status || null;
-  }, [attendance, workerId, today]);
+  const todayStatus = todayRecord?.status || null;
 
   const handleMark = async (status) => {
     if (!windowStatus.open) return;

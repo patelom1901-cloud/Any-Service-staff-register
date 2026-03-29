@@ -5,7 +5,7 @@ import {
   fetchAttendance, markAttendanceDB,
   fetchAdvances, addAdvanceDB, deleteAdvanceDB,
   computeMonthlyStats, computeWorkerBalance,
-  canMarkAttendance, incrementModification,
+  canMarkAttendance,
 } from '../utils/db';
 
 // ─── Workers ──────────────────────────────────────────────────────────────────
