@@ -13,6 +13,7 @@ import Reports from './pages/Reports';
 import WorkerDashboard from './pages/WorkerDashboard';
 import WorkerAttendance from './pages/WorkerAttendance';
 import WorkerAdvances from './pages/WorkerAdvances';
+import EveryoneView from './pages/EveryoneView';
 import './App.css';
 import InstallPWA from './components/InstallPWA';
 
@@ -24,6 +25,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Splash />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/everyone" element={<EveryoneView />} />
 
           <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
             <Route index element={<Dashboard />} />

@@ -7,6 +7,8 @@ const translations = {
     advances: 'Advances',
     reports: 'Reports',
     myStats: 'My Stats',
+    team: 'Team',
+    teamSummary: 'Team Summary',
 
     // Header
     adminPanel: 'Admin Panel',
@@ -141,6 +143,11 @@ const translations = {
     loading: 'Loading...',
     syncLive: 'Live',
     syncing: 'Syncing...',
+    viewCalendar: 'View Calendar',
+    attendanceCalendar: 'Attendance Calendar',
+    prevMonth: 'Previous Month',
+    nextMonth: 'Next Month',
+    close: 'Close',
 
     // PWA
     installApp: 'Install ASAR App',
@@ -162,6 +169,8 @@ const translations = {
     advances: 'એડવાન્સ',
     reports: 'રિપોર્ટ',
     myStats: 'મારી માહિતી',
+    team: 'ટીમ',
+    teamSummary: 'ટીમ સારાંશ',
 
     // Header
     adminPanel: 'એડમિન પૅનલ',
@@ -296,6 +305,11 @@ const translations = {
     loading: 'લૉડ...',
     syncLive: 'લાઇવ',
     syncing: 'સિંક...',
+    viewCalendar: 'કૅલેન્ડર જુઓ',
+    attendanceCalendar: 'હાજરી કૅલેન્ડર',
+    prevMonth: 'ગયા મહિને',
+    nextMonth: 'આવતા મહિને',
+    close: 'બંધ કરો',
 
     // PWA
     installApp: 'ASAR એપ ઇન્સ્ટોલ કરો',
@@ -317,6 +331,8 @@ const translations = {
     advances: 'अग्रिम',
     reports: 'रिपोर्ट',
     myStats: 'मेरी जानकारी',
+    team: 'टीम',
+    teamSummary: 'टीम सारांश',
 
     // Header
     adminPanel: 'एडमिन पैनल',
@@ -451,6 +467,11 @@ const translations = {
     loading: 'लोड हो रहा है...',
     syncLive: 'लाइव',
     syncing: 'सिंक...',
+    viewCalendar: 'कैलेंडर देखें',
+    attendanceCalendar: 'हाजिरी कैलेंडर',
+    prevMonth: 'पिछला महीना',
+    nextMonth: 'अगला महीना',
+    close: 'बंद करें',
 
     // PWA
     installApp: 'ASAR ऐप इंस्टॉल करें',

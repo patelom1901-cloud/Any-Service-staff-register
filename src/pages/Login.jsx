@@ -110,6 +110,14 @@ export default function Login() {
             </div>
             <span className="login-arrow">&#8250;</span>
           </button>
+          <button className="login-btn team" onClick={() => navigate('/everyone')}>
+            <span className="login-btn-icon">&#128101;</span>
+            <div>
+              <strong>{t('team')}</strong>
+              <span>{t('teamSummary')}</span>
+            </div>
+            <span className="login-arrow">&#8250;</span>
+          </button>
         </div>
       )}
 

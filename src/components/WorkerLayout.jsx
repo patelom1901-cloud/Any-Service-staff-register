@@ -50,6 +50,10 @@ export default function WorkerLayout() {
           <span className="nav-icon">&#8377;</span>
           <span className="nav-label">{t('advances')}</span>
         </NavLink>
+        <NavLink to="/everyone" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <span className="nav-icon">&#128101;</span>
+          <span className="nav-label">{t('team')}</span>
+        </NavLink>
       </nav>
     </div>
   );

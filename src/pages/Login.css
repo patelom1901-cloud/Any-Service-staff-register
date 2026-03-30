@@ -89,6 +89,10 @@
   background: #f0fdf4;
 }
 
+.login-btn.team .login-btn-icon {
+  background: #fff7ed;
+}
+
 .login-btn div {
   flex: 1;
 }

@@ -20,7 +20,10 @@ export default function AdminAttendance() {
 
   const getStatus = (workerId) => todayAttendance.find(a => a.workerId === workerId)?.status || null;
 
-  const handleMark = (workerId, status) => markAttendance(workerId, dateStr, status, true);
+  const handleMark = (workerId, newStatus) => {
+    const currentStatus = getStatus(workerId);
+    markAttendance(workerId, dateStr, currentStatus === newStatus ? null : newStatus, true);
+  };
 
   const markAll = (status) => workers.forEach(w => markAttendance(w.id, dateStr, status, true));
 
