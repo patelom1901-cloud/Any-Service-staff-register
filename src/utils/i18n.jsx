@@ -1,46 +1,23 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback } from 'react';
 import translations from './translations';
-import { supabase } from './supabase';
-import { fetchSettings, updateSetting } from './db';
 
-const LANG_KEY = 'language_pref';
+const LANG_STORAGE_KEY = 'nesh_worker_lang';
 const SUPPORTED = ['en', 'gu', 'hi'];
 const LANG_LABELS = { en: 'EN', gu: 'ગુ', hi: 'हि' };
 
 const LanguageContext = createContext(null);
 
 export function LanguageProvider({ children }) {
-  const [lang, setLangState] = useState('en');
+  const [lang, setLangState] = useState(() => {
+    // Immediate sync load from localStorage
+    const saved = localStorage.getItem(LANG_STORAGE_KEY);
+    return (saved && SUPPORTED.includes(saved)) ? saved : 'en';
+  });
 
-  // Load initial settings
-  useEffect(() => {
-    const load = async () => {
-      const settings = await fetchSettings();
-      if (settings[LANG_KEY] && SUPPORTED.includes(settings[LANG_KEY])) {
-        setLangState(settings[LANG_KEY]);
-      }
-    };
-    load();
-
-    // Listen for real-time changes to settings
-    const channel = supabase
-      .channel('settings-rt')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'settings', filter: `key=eq.${LANG_KEY}` }, (payload) => {
-        if (payload.new && SUPPORTED.includes(payload.new.value)) {
-          setLangState(payload.new.value);
-        }
-      })
-      .subscribe();
-
-    return () => supabase.removeChannel(channel);
-  }, []);
-
-  const setLang = useCallback(async (l) => {
-    try {
-      await updateSetting(LANG_KEY, l);
+  const setLang = useCallback((l) => {
+    if (SUPPORTED.includes(l)) {
+      localStorage.setItem(LANG_STORAGE_KEY, l);
       setLangState(l);
-    } catch (err) {
-      console.error('Failed to update language setting:', err);
     }
   }, []);
 
