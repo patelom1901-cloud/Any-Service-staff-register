@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   verifyAdminPassword, setCurrentUser, verifyWorkerPin,
   isBiometricAvailable, getBiometricCredential,
-  enrollBiometric, authenticateWithBiometric,
+  enrollBiometric, authenticateWithBiometric, isBiometricRegisteredGlobally
 } from '../utils/auth';
 import { checkRateLimit, recordFailedAttempt, resetRateLimit } from '../utils/security';
 import { useWorkers } from '../hooks/useData';
@@ -66,14 +66,17 @@ export default function Login() {
   };
 
   // Called after successful PIN auth — decide whether to show enroll prompt
-  const afterSuccessfulLogin = (worker) => {
+  const afterSuccessfulLogin = async (worker) => {
     const hasCred = getBiometricCredential(worker.id);
     if (bioAvailable && !hasCred) {
-      // Offer enrollment before navigating
-      setBioStep('ask');
-    } else {
-      navigate('/worker');
+      // Offer enrollment only if not already registered on another device
+      const isGlobal = await isBiometricRegisteredGlobally(worker.id);
+      if (!isGlobal) {
+        setBioStep('ask');
+        return;
+      }
     }
+    navigate('/worker');
   };
 
   const handleWorkerLogin = (e) => {
@@ -132,13 +135,31 @@ export default function Login() {
     navigate('/worker');
   };
 
-  const handleWorkerSelect = (worker) => {
+  const handleWorkerSelect = async (worker) => {
     setSelectedWorker(worker);
     setPin('');
     setError('');
     setBioStep(null);
+    
     const limit = checkRateLimit(`worker_login_${worker.id}`);
-    setLockoutTimer(!limit.allowed ? limit.remainingSecs : 0);
+    if (!limit.allowed) {
+      setLockoutTimer(limit.remainingSecs);
+      return;
+    }
+    setLockoutTimer(0);
+
+    const hasBio = getBiometricCredential(worker.id);
+    if (bioAvailable && !!hasBio) {
+      setBioLoading(true);
+      const success = await authenticateWithBiometric(worker.id);
+      if (success) {
+        setCurrentUser('worker', worker.id, worker.name);
+        navigate('/worker');
+      } else {
+        setError(t('fingerprintFailed'));
+      }
+      setBioLoading(false);
+    }
   };
 
   // Helpers

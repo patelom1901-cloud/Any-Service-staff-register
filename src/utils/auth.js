@@ -99,11 +99,20 @@ export function getBiometricCredential(workerId) {
   }
 }
 
+export async function isBiometricRegisteredGlobally(workerId) {
+  try {
+    const settings = await fetchSettings();
+    return !!settings[`bio_cred_${workerId}`];
+  } catch {
+    return false;
+  }
+}
+
 export async function enrollBiometric(workerId, workerName) {
   try {
     const settings = await fetchSettings();
     if (settings[`bio_cred_${workerId}`]) {
-      alert('A fingerprint is already registered for this worker on a different device. To use a new device, the existing registration must be removed first.');
+      alert('A fingerprint is already registered for this worker. An Admin must reset it before a new device can be used.');
       return false;
     }
 
