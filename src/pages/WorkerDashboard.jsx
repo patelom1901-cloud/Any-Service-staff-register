@@ -76,10 +76,12 @@ export default function WorkerDashboard() {
     setBioLoading(false);
   };
 
-  const handleRemoveBiometric = () => {
-    removeBiometricCredential(workerId);
+  const handleRemoveBiometric = async () => {
+    setBioLoading(true);
+    await removeBiometricCredential(workerId);
     setBioEnrolled(false);
     setBioMsg(t('fingerprintRemoved'));
+    setBioLoading(false);
   };
 
   if (!worker) {

@@ -51,6 +51,11 @@ export async function updateSetting(key, value) {
   if (error) throw error;
 }
 
+export async function deleteSetting(key) {
+  const { error } = await supabase.from('settings').delete().eq('key', key);
+  if (error) throw error;
+}
+
 // ─── Workers ──────────────────────────────────────────────────────────────────
 
 export async function fetchWorkers() {

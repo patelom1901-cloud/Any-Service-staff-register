@@ -1,5 +1,5 @@
 import { hashPassword, generateFingerprint } from './security';
-import { fetchSettings, updateSetting } from './db';
+import { fetchSettings, updateSetting, deleteSetting } from './db';
 
 
 const ADMIN_PW_KEY = 'admin_password_hash';
@@ -101,6 +101,12 @@ export function getBiometricCredential(workerId) {
 
 export async function enrollBiometric(workerId, workerName) {
   try {
+    const settings = await fetchSettings();
+    if (settings[`bio_cred_${workerId}`]) {
+      alert('A fingerprint is already registered for this worker on a different device. To use a new device, the existing registration must be removed first.');
+      return false;
+    }
+
     const challenge = crypto.getRandomValues(new Uint8Array(32));
     const userIdBytes = new TextEncoder().encode(String(workerId));
 
@@ -133,10 +139,10 @@ export async function enrollBiometric(workerId, workerName) {
 
     const rawIdArray = new Uint8Array(credential.rawId);
     const credId = btoa(String.fromCharCode(...rawIdArray));
-    localStorage.setItem(
-      `bio_cred_${workerId}`,
-      JSON.stringify({ credId, workerId, workerName })
-    );
+    const payload = JSON.stringify({ credId, workerId, workerName });
+    
+    localStorage.setItem(`bio_cred_${workerId}`, payload);
+    await updateSetting(`bio_cred_${workerId}`, payload);
     return true;
   } catch (err) {
     console.error('Biometric enrollment error:', err);
@@ -146,11 +152,15 @@ export async function enrollBiometric(workerId, workerName) {
 
 export async function authenticateWithBiometric(workerId) {
   try {
-    const stored = getBiometricCredential(workerId);
-    if (!stored) return false;
+    const settings = await fetchSettings();
+    const globalStr = settings[`bio_cred_${workerId}`];
+    const localStr = getBiometricCredential(workerId);
 
+    if (!globalStr || !localStr) return false;
+
+    const globalCred = JSON.parse(globalStr);
     const challenge = crypto.getRandomValues(new Uint8Array(32));
-    const credIdBytes = Uint8Array.from(atob(stored.credId), (c) => c.charCodeAt(0));
+    const credIdBytes = Uint8Array.from(atob(globalCred.credId), (c) => c.charCodeAt(0));
 
     const assertion = await navigator.credentials.get({
       publicKey: {
@@ -172,8 +182,11 @@ export async function authenticateWithBiometric(workerId) {
   }
 }
 
-export function removeBiometricCredential(workerId) {
+export async function removeBiometricCredential(workerId) {
   try {
     localStorage.removeItem(`bio_cred_${workerId}`);
-  } catch {}
+    await deleteSetting(`bio_cred_${workerId}`);
+  } catch (err) {
+    console.error('Biometric remove error:', err);
+  }
 }
