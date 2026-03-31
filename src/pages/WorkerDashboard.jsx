@@ -1,6 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { getCurrentUser } from '../utils/auth';
+import {
+  isBiometricAvailable, getBiometricCredential,
+  enrollBiometric, removeBiometricCredential,
+} from '../utils/auth';
 import { useWorkers, useAttendance, useAdvances, useStats } from '../hooks/useData';
 import { useTranslation } from '../utils/i18n';
 import './WorkerDashboard.css';
@@ -14,6 +18,21 @@ export default function WorkerDashboard() {
   const { attendance } = useAttendance(workerId);
   const { advances } = useAdvances(workerId);
   const { getStats, getBalance } = useStats(workers, attendance, advances);
+
+  // Biometric state
+  const [bioAvailable, setBioAvailable] = useState(false);
+  const [bioEnrolled, setBioEnrolled] = useState(false);
+  const [bioLoading, setBioLoading] = useState(false);
+  const [bioMsg, setBioMsg] = useState('');
+
+  useEffect(() => {
+    isBiometricAvailable().then(ok => {
+      setBioAvailable(ok);
+      if (ok && workerId) {
+        setBioEnrolled(!!getBiometricCredential(workerId));
+      }
+    });
+  }, [workerId]);
 
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -38,6 +57,29 @@ export default function WorkerDashboard() {
   const getStatusColor = (dateStr) => {
     const rec = attendance.find(a => a.date === dateStr);
     return rec?.status || '';
+  };
+
+  const handleEnrollBiometric = async () => {
+    setBioLoading(true);
+    setBioMsg('');
+    try {
+      const ok = await enrollBiometric(workerId, worker.name);
+      if (ok) {
+        setBioEnrolled(true);
+        setBioMsg(t('fingerprintEnabled'));
+      } else {
+        setBioMsg(t('fingerprintFailed'));
+      }
+    } catch {
+      setBioMsg(t('fingerprintFailed'));
+    }
+    setBioLoading(false);
+  };
+
+  const handleRemoveBiometric = () => {
+    removeBiometricCredential(workerId);
+    setBioEnrolled(false);
+    setBioMsg(t('fingerprintRemoved'));
   };
 
   if (!worker) {
@@ -111,6 +153,38 @@ export default function WorkerDashboard() {
         <span className="legend-item"><i className="legend-dot half"></i>{t('halfDay')}</span>
         <span className="legend-item"><i className="legend-dot absent"></i>{t('absent')}</span>
       </div>
+
+      {/* ── Fingerprint security section (only shown if device supports it) ── */}
+      {bioAvailable && (
+        <div className="bio-security-card">
+          <div className="bio-security-header">
+            <span className="bio-security-icon">&#128274;</span>
+            <div>
+              <strong>{t('fingerprintSecurity')}</strong>
+              <span>{bioEnrolled ? t('fingerprintActive') : t('fingerprintInactive')}</span>
+            </div>
+            <span className={`bio-status-dot ${bioEnrolled ? 'on' : 'off'}`}></span>
+          </div>
+          {bioMsg && <p className={`bio-msg ${bioEnrolled ? 'success' : 'error'}`}>{bioMsg}</p>}
+          {bioEnrolled ? (
+            <button
+              className="btn-bio-remove"
+              onClick={handleRemoveBiometric}
+              disabled={bioLoading}
+            >
+              &#10005; {t('fingerprintRemoveBtn')}
+            </button>
+          ) : (
+            <button
+              className="btn-bio-enable"
+              onClick={handleEnrollBiometric}
+              disabled={bioLoading}
+            >
+              {bioLoading ? '...' : `&#128270; ${t('fingerprintEnableBtn')}`}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { verifyAdminPassword, setCurrentUser, verifyWorkerPin } from '../utils/auth';
+import {
+  verifyAdminPassword, setCurrentUser, verifyWorkerPin,
+  isBiometricAvailable, getBiometricCredential,
+  enrollBiometric, authenticateWithBiometric,
+} from '../utils/auth';
 import { checkRateLimit, recordFailedAttempt, resetRateLimit } from '../utils/security';
 import { useWorkers } from '../hooks/useData';
 import { useTranslation } from '../utils/i18n';
@@ -16,7 +20,17 @@ export default function Login() {
   const [pin, setPin] = useState('');
   const [lockoutTimer, setLockoutTimer] = useState(0);
 
+  // Biometric states
+  const [bioAvailable, setBioAvailable] = useState(false);
+  const [bioLoading, setBioLoading] = useState(false);
+  const [bioStep, setBioStep] = useState(null); // 'ask' = prompt to enroll after PIN login
+
   const { workers, loading: workersLoading } = useWorkers();
+
+  // Check if device supports biometrics on mount
+  useEffect(() => {
+    isBiometricAvailable().then(ok => setBioAvailable(ok));
+  }, []);
 
   useEffect(() => {
     let timer;
@@ -51,6 +65,17 @@ export default function Login() {
     }
   };
 
+  // Called after successful PIN auth — decide whether to show enroll prompt
+  const afterSuccessfulLogin = (worker) => {
+    const hasCred = getBiometricCredential(worker.id);
+    if (bioAvailable && !hasCred) {
+      // Offer enrollment before navigating
+      setBioStep('ask');
+    } else {
+      navigate('/worker');
+    }
+  };
+
   const handleWorkerLogin = (e) => {
     e.preventDefault();
     const limit = checkRateLimit(`worker_login_${selectedWorker.id}`);
@@ -63,7 +88,7 @@ export default function Login() {
     if (isValid) {
       resetRateLimit(`worker_login_${selectedWorker.id}`);
       setCurrentUser('worker', selectedWorker.id, selectedWorker.name);
-      navigate('/worker');
+      afterSuccessfulLogin(selectedWorker);
     } else {
       recordFailedAttempt(`worker_login_${selectedWorker.id}`);
       const upd = checkRateLimit(`worker_login_${selectedWorker.id}`);
@@ -76,13 +101,48 @@ export default function Login() {
     }
   };
 
+  // Fingerprint login — triggered by the fingerprint button
+  const handleFingerprintLogin = async () => {
+    if (!selectedWorker) return;
+    setBioLoading(true);
+    setError('');
+    try {
+      const success = await authenticateWithBiometric(selectedWorker.id);
+      if (success) {
+        setCurrentUser('worker', selectedWorker.id, selectedWorker.name);
+        navigate('/worker');
+      } else {
+        setError(t('fingerprintFailed'));
+      }
+    } catch {
+      setError(t('fingerprintFailed'));
+    }
+    setBioLoading(false);
+  };
+
+  // Enroll fingerprint after successful PIN login
+  const handleEnrollYes = async () => {
+    setBioLoading(true);
+    try {
+      await enrollBiometric(selectedWorker.id, selectedWorker.name);
+    } catch {
+      // enroll failed silently, still navigate
+    }
+    setBioLoading(false);
+    navigate('/worker');
+  };
+
   const handleWorkerSelect = (worker) => {
     setSelectedWorker(worker);
     setPin('');
     setError('');
+    setBioStep(null);
     const limit = checkRateLimit(`worker_login_${worker.id}`);
     setLockoutTimer(!limit.allowed ? limit.remainingSecs : 0);
   };
+
+  // Helpers
+  const workerHasBio = selectedWorker && bioAvailable && !!getBiometricCredential(selectedWorker.id);
 
   return (
     <div className="login-page">
@@ -92,6 +152,7 @@ export default function Login() {
         <p>Attendance Register</p>
       </div>
 
+      {/* ── Mode selection ─────────────────────────────────────────── */}
       {!mode && (
         <div className="login-options">
           <button className="login-btn admin" onClick={() => { setMode('admin'); setPassword(''); setError(''); setLockoutTimer(0); }}>
@@ -121,6 +182,7 @@ export default function Login() {
         </div>
       )}
 
+      {/* ── Admin login form ───────────────────────────────────────── */}
       {mode === 'admin' && (
         <form className="login-form" onSubmit={handleAdminLogin}>
           <h3>{t('adminLogin')}</h3>
@@ -141,6 +203,7 @@ export default function Login() {
         </form>
       )}
 
+      {/* ── Worker name selection ──────────────────────────────────── */}
       {mode === 'worker' && !selectedWorker && (
         <div className="worker-select">
           <h3>{t('selectYourName')}</h3>
@@ -157,6 +220,10 @@ export default function Login() {
                 <button key={w.id} className="worker-select-btn" onClick={() => handleWorkerSelect(w)}>
                   <span className="worker-avatar">{w.name.charAt(0).toUpperCase()}</span>
                   <span className="worker-select-name">{w.name}</span>
+                  {/* Show fingerprint tag if this worker has a saved credential */}
+                  {bioAvailable && getBiometricCredential(w.id) && (
+                    <span className="bio-tag">&#128274;</span>
+                  )}
                   <span className="worker-select-arrow">&#8250;</span>
                 </button>
               ))}
@@ -166,7 +233,8 @@ export default function Login() {
         </div>
       )}
 
-      {mode === 'worker' && selectedWorker && (
+      {/* ── Worker PIN form + optional fingerprint button ──────────── */}
+      {mode === 'worker' && selectedWorker && !bioStep && (
         <form className="login-form" onSubmit={handleWorkerLogin}>
           <h3>{selectedWorker.name}</h3>
           <p className="pin-hint">{t('enterPin')} ({t('defaultPin')})</p>
@@ -188,7 +256,49 @@ export default function Login() {
             <button type="submit" className="btn btn-primary" disabled={lockoutTimer > 0}>{t('enter')}</button>
             <button type="button" className="btn btn-ghost" onClick={() => { setSelectedWorker(null); setPin(''); setError(''); }}>{t('back')}</button>
           </div>
+
+          {/* Fingerprint button — only shown if this worker has enrolled on this device */}
+          {workerHasBio && (
+            <button
+              type="button"
+              className="fingerprint-btn"
+              onClick={handleFingerprintLogin}
+              disabled={bioLoading || lockoutTimer > 0}
+            >
+              {bioLoading ? (
+                <span className="bio-spinner">&#9696;</span>
+              ) : (
+                <span className="bio-icon">&#128270;</span>
+              )}
+              <span>{bioLoading ? t('fingerprintChecking') : t('useFingerprint')}</span>
+            </button>
+          )}
         </form>
+      )}
+
+      {/* ── Post-PIN fingerprint enrollment prompt ─────────────────── */}
+      {bioStep === 'ask' && selectedWorker && (
+        <div className="login-form bio-enroll-card">
+          <div className="bio-enroll-icon">&#128270;</div>
+          <h3>{t('enableFingerprintTitle')}</h3>
+          <p className="bio-enroll-desc">{t('enableFingerprintDesc')}</p>
+          <div className="login-form-actions">
+            <button
+              className="btn btn-primary"
+              onClick={handleEnrollYes}
+              disabled={bioLoading}
+            >
+              {bioLoading ? t('fingerprintChecking') : t('enableFingerprintYes')}
+            </button>
+            <button
+              className="btn btn-ghost"
+              onClick={() => navigate('/worker')}
+              disabled={bioLoading}
+            >
+              {t('enableFingerprintSkip')}
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

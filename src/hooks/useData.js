@@ -3,7 +3,7 @@ import { supabase } from '../utils/supabase';
 import {
   fetchWorkers, addWorkerDB, updateWorkerDB, deleteWorkerDB,
   fetchAttendance, markAttendanceDB,
-  fetchAdvances, addAdvanceDB, deleteAdvanceDB,
+  fetchAdvances, addAdvanceDB, deleteAdvanceDB, addRepaymentDB,
   computeMonthlyStats, computeWorkerBalance,
   canMarkAttendance,
 } from '../utils/db';
@@ -139,7 +139,16 @@ export function useAdvances(workerId = null) {
     }
   }, []);
 
-  return { advances, loading, addAdvance, deleteAdvance };
+  const addRepayment = useCallback(async (repayment) => {
+    try {
+      await addRepaymentDB(repayment);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }, []);
+
+  return { advances, loading, addAdvance, deleteAdvance, addRepayment };
 }
 
 // ─── Stats (computed from in-memory data) ─────────────────────────────────────

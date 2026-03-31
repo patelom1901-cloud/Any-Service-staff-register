@@ -171,6 +171,22 @@ export async function deleteAdvanceDB(id) {
   if (error) throw error;
 }
 
+export async function addRepaymentDB(repayment) {
+  const { data, error } = await supabase
+    .from('advances')
+    .insert([{
+      worker_id: repayment.workerId,
+      amount: -Math.abs(repayment.amount), // negative = repayment
+      date: repayment.date,
+      reason: sanitizeInput(repayment.reason || 'Repayment'),
+      added_by: 'repayment',
+    }])
+    .select()
+    .single();
+  if (error) throw error;
+  return mapAdvance(data);
+}
+
 export function canMarkAttendance(workerId, attendance) {
   if (!isAttendanceWindowOpen()) {
     return { allowed: false, reason: getAttendanceWindowStatus().reason, remaining: 0 };

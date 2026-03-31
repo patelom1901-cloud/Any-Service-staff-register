@@ -139,6 +139,34 @@ const translations = {
     total: 'Total',
     addWorkersFirstReports: 'Add workers and mark attendance to generate reports.',
 
+    // Fingerprint / Biometric
+    useFingerprint: 'Use Fingerprint',
+    fingerprintFailed: 'Fingerprint failed. Try again.',
+    fingerprintChecking: 'Checking...',
+    enableFingerprintTitle: 'Enable Fingerprint',
+    enableFingerprintDesc: 'Use your fingerprint or face to login faster next time.',
+    enableFingerprintYes: 'Enable Now',
+    enableFingerprintSkip: 'Skip for now',
+    fingerprintEnabled: 'Fingerprint login enabled.',
+    fingerprintRemoved: 'Fingerprint login removed.',
+    fingerprintSecurity: 'Fingerprint Security',
+    fingerprintActive: 'Active - Used for faster login',
+    fingerprintInactive: 'Inactive',
+    fingerprintEnableBtn: 'Enable',
+    fingerprintRemoveBtn: 'Remove',
+
+    // Repayments & Advances
+    recordRepayment: 'Record Repayment',
+    repayAmount: 'Repay Amount (₹)',
+    repayAmountError: 'Invalid amount.',
+    repaymentLabel: 'Repayment',
+    repayNote: 'Note (optional)',
+    repayNotePlaceholder: 'e.g. Cash returned',
+    recordRepaymentBtn: 'Record Repayment',
+    thisMonthTaken: 'Taken',
+    thisMonthRepaid: 'Repaid',
+    thisMonthNet: 'Net Balance',
+
     // General
     loading: 'Loading...',
     syncLive: 'Live',
@@ -301,6 +329,34 @@ const translations = {
     total: 'કુલ',
     addWorkersFirstReports: 'કામદારો ઉમેરી હાજરી નોંધો.',
 
+    // Fingerprint / Biometric
+    useFingerprint: 'આંગળીની છાપ વાપરો',
+    fingerprintFailed: 'છાપ નિષ્ફળ. ફરીથી પ્રયાસ કરો.',
+    fingerprintChecking: 'તપાસી રહ્યા છીએ...',
+    enableFingerprintTitle: 'ફિંગરપ્રિન્ટ ચાલુ કરો',
+    enableFingerprintDesc: 'આગલી વખતે ઝડપી લૉગિન માટે તમારી ફિંગરપ્રિન્ટ વાપરો.',
+    enableFingerprintYes: 'હમણાં ચાલુ કરો',
+    enableFingerprintSkip: 'અત્યારે છોડી દો',
+    fingerprintEnabled: 'ફિંગરપ્રિન્ટ લૉગિન ચાલુ છે.',
+    fingerprintRemoved: 'ફિંગરપ્રિન્ટ લૉગિન દૂર કર્યું.',
+    fingerprintSecurity: 'ફિંગરપ્રિન્ટ સુરક્ષા',
+    fingerprintActive: 'સક્રિય - ઝડપી લૉગિન માટે',
+    fingerprintInactive: 'નિષ્ક્રિય',
+    fingerprintEnableBtn: 'ચાલુ કરો',
+    fingerprintRemoveBtn: 'દૂર કરો',
+
+    // Repayments & Advances
+    recordRepayment: 'પરત નોંધ કરો',
+    repayAmount: 'પરત રકમ (₹)',
+    repayAmountError: 'અમાન્ય રકમ.',
+    repaymentLabel: 'પરત',
+    repayNote: 'નોંધ (વૈકલ્પિક)',
+    repayNotePlaceholder: 'દા.ત. રોકડ પરત',
+    recordRepaymentBtn: 'પરત નોંધ કરો',
+    thisMonthTaken: 'લીધેલું',
+    thisMonthRepaid: 'પરત',
+    thisMonthNet: 'ચોખ્ખું',
+
     // General
     loading: 'લૉડ...',
     syncLive: 'લાઇવ',
@@ -462,6 +518,34 @@ const translations = {
     balance: 'बैलेंस',
     total: 'कुल',
     addWorkersFirstReports: 'कर्मचारी जोड़कर हाजिरी दर्ज करें।',
+
+    // Fingerprint / Biometric
+    useFingerprint: 'फिंगरप्रिंट का उपयोग करें',
+    fingerprintFailed: 'फिंगरप्रिंट विफल। पुनः प्रयास करें।',
+    fingerprintChecking: 'जांच हो रही है...',
+    enableFingerprintTitle: 'फिंगरप्रिंट सक्षम करें',
+    enableFingerprintDesc: 'अगली बार तेज़ी से लॉगिन करने के लिए अपने फिंगरप्रिंट का उपयोग करें।',
+    enableFingerprintYes: 'अभी सक्षम करें',
+    enableFingerprintSkip: 'अभी छोड़ें',
+    fingerprintEnabled: 'फिंगरप्रिंट लॉगिन सक्षम है।',
+    fingerprintRemoved: 'फिंगरप्रिंट लॉगिन हटा दिया गया।',
+    fingerprintSecurity: 'फिंगरप्रिंट सुरक्षा',
+    fingerprintActive: 'सक्रिय - तेज़ लॉगिन के लिए',
+    fingerprintInactive: 'निष्क्रिय',
+    fingerprintEnableBtn: 'सक्षम करें',
+    fingerprintRemoveBtn: 'हटाएं',
+
+    // Repayments & Advances
+    recordRepayment: 'वापसी दर्ज़ करें',
+    repayAmount: 'वापसी राशि (₹)',
+    repayAmountError: 'अमान्य राशि।',
+    repaymentLabel: 'वापसी',
+    repayNote: 'नोट (वैकल्पिक)',
+    repayNotePlaceholder: 'जैसे नकद वापसी',
+    recordRepaymentBtn: 'वापसी दर्ज़ करें',
+    thisMonthTaken: 'लिया गया',
+    thisMonthRepaid: 'वापस किया',
+    thisMonthNet: 'शुद्ध',
 
     // General
     loading: 'लोड हो रहा है...',
