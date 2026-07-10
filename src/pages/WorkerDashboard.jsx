@@ -7,6 +7,7 @@ import {
 } from '../utils/auth';
 import { useWorkers, useAttendance, useAdvances, useStats } from '../hooks/useData';
 import { useTranslation } from '../utils/i18n';
+import { getOvertimePay } from '../utils/db';
 import './WorkerDashboard.css';
 
 export default function WorkerDashboard() {
@@ -49,6 +50,9 @@ export default function WorkerDashboard() {
     getBalance(workerId, currentYear, currentMonth),
     [getBalance, workerId, currentYear, currentMonth]
   );
+
+  const otPay = worker ? getOvertimePay(stats.totalOvertimeHours, worker.dailyWage) : 0;
+  const baseWage = worker ? (balance.earned - otPay) : 0;
 
   const monthStart = startOfMonth(now);
   const monthEnd = endOfMonth(now);
@@ -118,17 +122,25 @@ export default function WorkerDashboard() {
 
       <div className="finance-cards">
         <div className="finance-card">
-          <span className="finance-label">{t('totalEarned')}</span>
-          <span className="finance-value earned">&#8377;{balance.earned}</span>
+          <span className="finance-label">{t('baseWage')}</span>
+          <span className="finance-value earned">&#8377;{baseWage.toFixed(2)}</span>
+        </div>
+        <div className="finance-card">
+          <span className="finance-label">{t('overtimePay')} ({stats.totalOvertimeHours}h)</span>
+          <span className="finance-value overtime">&#8377;{otPay.toFixed(2)}</span>
+        </div>
+        <div className="finance-card highlight">
+          <span className="finance-label">{t('totalEarned')} (Base + OT)</span>
+          <span className="finance-value earned">&#8377;{balance.earned.toFixed(2)}</span>
         </div>
         <div className="finance-card">
           <span className="finance-label">{t('advanceTaken')}</span>
-          <span className="finance-value advance">&#8377;{balance.advance}</span>
+          <span className="finance-value advance">&#8377;{balance.advance.toFixed(2)}</span>
         </div>
         <div className="finance-card highlight">
           <span className="finance-label">{t('netBalance')}</span>
           <span className={`finance-value ${balance.balance >= 0 ? 'positive' : 'negative'}`}>
-            &#8377;{balance.balance}
+            &#8377;{balance.balance.toFixed(2)}
           </span>
         </div>
       </div>

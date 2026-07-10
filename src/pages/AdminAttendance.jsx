@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { format, addDays, subDays, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { useWorkers, useAttendance } from '../hooks/useData';
 import { useTranslation } from '../utils/i18n';
@@ -22,10 +22,17 @@ export default function AdminAttendance() {
 
   const handleMark = (workerId, newStatus) => {
     const currentStatus = getStatus(workerId);
-    markAttendance(workerId, dateStr, currentStatus === newStatus ? null : newStatus, true);
+    const record = todayAttendance.find(a => a.workerId === workerId);
+    const targetStatus = currentStatus === newStatus ? null : newStatus;
+    const ot = (targetStatus === 'absent' || targetStatus === null) ? 0 : (record?.overtimeHours || 0);
+    markAttendance(workerId, dateStr, targetStatus, true, { overtimeHours: ot });
   };
 
-  const markAll = (status) => workers.forEach(w => markAttendance(w.id, dateStr, status, true));
+  const markAll = (status) => workers.forEach(w => {
+    const record = todayAttendance.find(a => a.workerId === w.id);
+    const ot = (status === 'absent') ? 0 : (record?.overtimeHours || 0);
+    markAttendance(w.id, dateStr, status, true, { overtimeHours: ot });
+  });
 
   if (workers.length === 0) {
     return (
@@ -72,6 +79,15 @@ export default function AdminAttendance() {
                     <button className={`att-btn p ${status === 'present' ? 'active' : ''}`} onClick={() => handleMark(w.id, 'present')}>P</button>
                     <button className={`att-btn h ${status === 'half' ? 'active' : ''}`} onClick={() => handleMark(w.id, 'half')}>H</button>
                     <button className={`att-btn a ${status === 'absent' ? 'active' : ''}`} onClick={() => handleMark(w.id, 'absent')}>A</button>
+                    {(status === 'present' || status === 'half') && (
+                      <OvertimeInput
+                        workerId={w.id}
+                        dateStr={dateStr}
+                        currentStatus={status}
+                        initialValue={todayAttendance.find(a => a.workerId === w.id)?.overtimeHours || 0}
+                        markAttendance={markAttendance}
+                      />
+                    )}
                   </div>
                 </div>
               );
@@ -83,6 +99,49 @@ export default function AdminAttendance() {
       {view === 'calendar' && (
         <CalendarView workers={workers} attendance={attendance} t={t} />
       )}
+    </div>
+  );
+}
+
+function OvertimeInput({ workerId, dateStr, currentStatus, initialValue, markAttendance }) {
+  const [val, setVal] = useState(initialValue === 0 ? '' : String(initialValue));
+
+  useEffect(() => {
+    setVal(initialValue === 0 ? '' : String(initialValue));
+  }, [initialValue]);
+
+  const handleBlur = () => {
+    let num = parseFloat(val);
+    if (val === '' || isNaN(num)) {
+      num = 0;
+    }
+    if (num < 0) {
+      alert("Overtime hours cannot be negative.");
+      setVal(initialValue === 0 ? '' : String(initialValue));
+      return;
+    }
+    if (num > 16) {
+      alert("Overtime hours cannot exceed 16.");
+      setVal(initialValue === 0 ? '' : String(initialValue));
+      return;
+    }
+    markAttendance(workerId, dateStr, currentStatus, true, { overtimeHours: num });
+  };
+
+  return (
+    <div className="ot-input-container">
+      <span className="ot-label">OT:</span>
+      <input
+        type="number"
+        className="ot-input"
+        value={val}
+        onChange={e => setVal(e.target.value)}
+        onBlur={handleBlur}
+        min="0"
+        max="16"
+        step="0.5"
+        placeholder="0"
+      />
     </div>
   );
 }

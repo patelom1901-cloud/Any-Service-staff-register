@@ -20,6 +20,7 @@ export function mapAttendance(row) {
     workerId: row.worker_id,
     date: row.date,
     status: row.status,
+    overtimeHours: Number(row.overtime_hours) || 0,
     modCount: row.mod_count || 0,
   };
 }
@@ -108,7 +109,7 @@ export async function fetchAttendance(workerId = null) {
   return (data || []).map(mapAttendance);
 }
 
-export async function markAttendanceDB(workerId, date, status, incrementMod = false) {
+export async function markAttendanceDB(workerId, date, status, incrementMod = false, overtimeHours = undefined) {
   if (status === null) {
     const { error } = await supabase
       .from('attendance')
@@ -119,30 +120,32 @@ export async function markAttendanceDB(workerId, date, status, incrementMod = fa
     return;
   }
 
-  if (incrementMod) {
-    // We use a raw RPC or a careful select+update if we want to be safe, 
-    // but for this app a simple upsert with increment logic or separate select is fine.
-    // Let's do a select first to get current mod_count
-    const { data: existing } = await supabase
-      .from('attendance')
-      .select('mod_count')
-      .eq('worker_id', workerId)
-      .eq('date', date)
-      .single();
-    
-    const newModCount = (existing?.mod_count || 0) + 1;
-    const { error } = await supabase.from('attendance').upsert(
-      [{ worker_id: workerId, date, status, mod_count: newModCount }],
-      { onConflict: 'worker_id,date' }
-    );
-    if (error) throw error;
-  } else {
-    const { error } = await supabase.from('attendance').upsert(
-      [{ worker_id: workerId, date, status }],
-      { onConflict: 'worker_id,date' }
-    );
-    if (error) throw error;
+  // Fetch the existing record to get the latest mod_count and overtime_hours
+  const { data: existing } = await supabase
+    .from('attendance')
+    .select('mod_count, overtime_hours')
+    .eq('worker_id', workerId)
+    .eq('date', date)
+    .maybeSingle();
+
+  const newModCount = (existing?.mod_count || 0) + (incrementMod ? 1 : 0);
+  let newOvertime = (overtimeHours !== undefined) ? overtimeHours : (existing?.overtime_hours || 0);
+  
+  if (status === 'absent') {
+    newOvertime = 0;
   }
+
+  const { error } = await supabase.from('attendance').upsert(
+    [{
+      worker_id: workerId,
+      date,
+      status,
+      mod_count: newModCount,
+      overtime_hours: newOvertime,
+    }],
+    { onConflict: 'worker_id,date' }
+  );
+  if (error) throw error;
 }
 
 // ─── Advances ─────────────────────────────────────────────────────────────────
@@ -213,22 +216,34 @@ export function computeMonthlyStats(workerId, year, month, attendance, advances)
   const att = attendance.filter(a => a.workerId === workerId && a.date.startsWith(prefix));
   const adv = advances.filter(a => a.workerId === workerId && a.date.startsWith(prefix));
 
-  let present = 0, halfDay = 0, absent = 0;
+  let present = 0, halfDay = 0, absent = 0, totalOvertimeHours = 0;
   att.forEach(a => {
-    if (a.status === 'present') present++;
-    else if (a.status === 'half') halfDay++;
-    else if (a.status === 'absent') absent++;
+    if (a.status === 'present') {
+      present++;
+      totalOvertimeHours += a.overtimeHours || 0;
+    } else if (a.status === 'half') {
+      halfDay++;
+      totalOvertimeHours += a.overtimeHours || 0;
+    } else if (a.status === 'absent') {
+      absent++;
+      // overtimeHours intentionally ignored for absent records
+    }
   });
 
   const totalAdvance = adv.reduce((s, a) => s + a.amount, 0);
-  return { present, halfDay, absent, totalAdvance, attendanceDays: present + halfDay * 0.5 };
+  return { present, halfDay, absent, totalAdvance, attendanceDays: present + halfDay * 0.5, totalOvertimeHours };
+}
+
+export function getOvertimePay(overtimeHours, dailyWage) {
+  return overtimeHours * (dailyWage / 8);
 }
 
 export function computeWorkerBalance(workerId, year, month, workers, attendance, advances) {
   const worker = workers.find(w => w.id === workerId);
   if (!worker) return { earned: 0, advance: 0, balance: 0 };
   const stats = computeMonthlyStats(workerId, year, month, attendance, advances);
-  const earned = stats.attendanceDays * worker.dailyWage;
+  const earned = (stats.attendanceDays * worker.dailyWage)
+    + getOvertimePay(stats.totalOvertimeHours, worker.dailyWage);
   return { earned, advance: stats.totalAdvance, balance: earned - stats.totalAdvance };
 }
 

@@ -99,8 +99,11 @@ const translations = {
     // Worker Dashboard
     hello: 'Hello',
     monthlySummaryTag: "Here's your monthly summary",
+    baseWage: 'Base Wage',
     advanceTaken: 'Advance Taken',
     netBalance: 'Net Balance',
+    overtimeHours: 'Overtime Hours',
+    overtimePay: 'Overtime Pay',
     calendarTitle: 'Calendar',
     workerNotFound: 'Worker not found. Contact admin.',
 
@@ -289,8 +292,11 @@ const translations = {
     // Worker Dashboard
     hello: 'નમસ્તે',
     monthlySummaryTag: 'આ રહ્યો તમારો માસિક સારાંશ',
+    baseWage: 'મૂળ વેતન',
     advanceTaken: 'ઉઠાવ્યો',
     netBalance: 'ચોખ્ખું',
+    overtimeHours: 'ઓવરટાઇમ કલાક',
+    overtimePay: 'ઓવરટાઇમ વેતન',
     calendarTitle: 'કૅલૅન્ડર',
     workerNotFound: 'કામદાર મળ્યો નહિ. એડમિન સંપર્ક.',
 
@@ -479,8 +485,11 @@ const translations = {
     // Worker Dashboard
     hello: 'नमस्ते',
     monthlySummaryTag: 'यहाँ आपका मासिक सारांश है',
+    baseWage: 'मूल वेतन',
     advanceTaken: 'लिया गया',
     netBalance: 'शुद्ध',
+    overtimeHours: 'ओवरटाइम घंटे',
+    overtimePay: 'ओवरटाइम भुगतान',
     calendarTitle: 'कैलेंडर',
     workerNotFound: 'कर्मचारी नहीं मिला। एडमिन से संपर्क करें।',
 

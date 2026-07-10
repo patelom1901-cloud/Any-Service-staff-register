@@ -80,7 +80,7 @@ export function useAttendance(workerId = null) {
     return () => supabase.removeChannel(channel);
   }, [load]);
 
-  const markAttendance = useCallback(async (wId, date, status, isAdmin = false) => {
+  const markAttendance = useCallback(async (wId, date, status, isAdmin = false, options = {}) => {
     if (!isAdmin) {
       const check = canMarkAttendance(wId, attendance);
       if (!check.allowed && status !== null) {
@@ -88,7 +88,7 @@ export function useAttendance(workerId = null) {
       }
     }
     try {
-      await markAttendanceDB(wId, date, status, !isAdmin);
+      await markAttendanceDB(wId, date, status, !isAdmin, options.overtimeHours);
       return { success: true, reason: null };
     } catch (err) {
       console.error('markAttendance error:', err);

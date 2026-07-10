@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import { computeMonthlyStats } from './db';
+import { computeMonthlyStats, computeWorkerBalance, getOvertimePay } from './db';
 
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'];
@@ -11,7 +11,7 @@ export function exportMonthlyReport(year, month, fmt = 'xlsx', workers = [], att
 
   const summaryData = workers.map(w => {
     const stats = computeMonthlyStats(w.id, year, month, attendance, advances);
-    const earned = stats.attendanceDays * w.dailyWage;
+    const earned = computeWorkerBalance(w.id, year, month, workers, attendance, advances).earned;
     return {
       'Worker Name': w.name,
       'Phone': w.phone || '-',
@@ -19,6 +19,8 @@ export function exportMonthlyReport(year, month, fmt = 'xlsx', workers = [], att
       'Days Present': stats.present,
       'Half Days': stats.halfDay,
       'Days Absent': stats.absent,
+      'Overtime Hours': stats.totalOvertimeHours,
+      'Overtime Pay': getOvertimePay(stats.totalOvertimeHours, w.dailyWage),
       'Total Earned': earned,
       'Advance Taken': stats.totalAdvance,
       'Balance (Payable)': earned - stats.totalAdvance,
@@ -32,6 +34,7 @@ export function exportMonthlyReport(year, month, fmt = 'xlsx', workers = [], att
       'Date': a.date,
       'Worker': worker?.name || 'Unknown',
       'Status': a.status === 'present' ? 'Present' : a.status === 'half' ? 'Half Day' : 'Absent',
+      'Overtime Hours': a.overtimeHours,
     };
   });
 
@@ -63,7 +66,7 @@ export function exportYearlyReport(year, fmt = 'xlsx', workers = [], attendance 
 
     for (let m = 0; m < 12; m++) {
       const stats = computeMonthlyStats(w.id, year, m, attendance, advances);
-      const earned = stats.attendanceDays * w.dailyWage;
+      const earned = computeWorkerBalance(w.id, year, m, workers, attendance, advances).earned;
       row[`${MONTH_SHORT[m]} Days`] = stats.present + stats.halfDay * 0.5;
       row[`${MONTH_SHORT[m]} Earned`] = earned;
       row[`${MONTH_SHORT[m]} Advance`] = stats.totalAdvance;

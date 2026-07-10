@@ -110,9 +110,14 @@ export default function WorkerAttendance() {
           recentAttendance.map(a => (
             <div key={`${a.workerId}_${a.date}`} className={`recent-item ${a.status}`}>
               <span className="recent-date">{format(new Date(a.date + 'T00:00:00'), 'dd MMM yyyy')}</span>
-              <span className={`recent-status ${a.status}`}>
-                {a.status === 'present' ? t('present') : a.status === 'half' ? t('halfDay') : t('absent')}
-              </span>
+              <div>
+                <span className={`recent-status ${a.status}`}>
+                  {a.status === 'present' ? t('present') : a.status === 'half' ? t('halfDay') : t('absent')}
+                </span>
+                {a.overtimeHours > 0 && (
+                  <span className="ot-badge">+{a.overtimeHours}h OT</span>
+                )}
+              </div>
             </div>
           ))
         )}
